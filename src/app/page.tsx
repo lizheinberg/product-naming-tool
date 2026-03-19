@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import {
   decisionTreeQuestions,
   brainstormQuestions,
@@ -10,20 +11,81 @@ import { getOutcome, type Outcome } from "@/lib/outcomes";
 
 // ─── Shared UI Components ──────────────────────────────────────
 
-function Footer({ full = false }: { full?: boolean }) {
+function PrequelLogo() {
   return (
-    <p
+    <a
+      href="https://www.prequel.agency"
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{ display: "inline-block" }}
+    >
+      <Image
+        src="/prequel-logo.svg"
+        alt="Prequel"
+        width={120}
+        height={33}
+        priority
+      />
+    </a>
+  );
+}
+
+function Header() {
+  return (
+    <header
       style={{
-        fontSize: 12,
-        color: "var(--text-secondary)",
-        marginTop: 48,
-        borderTop: "1px solid var(--border)",
-        paddingTop: 16,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        marginBottom: 48,
+        paddingBottom: 24,
+        borderBottom: "1px solid var(--border)",
       }}
     >
-      Powered by <span style={{ fontWeight: 600 }}>Prequel</span>
-      {full && " — a strategic naming shop"}
-    </p>
+      <PrequelLogo />
+      <span
+        style={{
+          fontSize: 13,
+          fontWeight: 500,
+          color: "var(--text-secondary)",
+          letterSpacing: "0.04em",
+        }}
+      >
+        Naming Tool
+      </span>
+    </header>
+  );
+}
+
+function Footer({ full = false }: { full?: boolean }) {
+  return (
+    <footer
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        marginTop: 56,
+        paddingTop: 20,
+        borderTop: "1px solid var(--border)",
+      }}
+    >
+      <Image
+        src="/prequel-logo.svg"
+        alt="Prequel"
+        width={80}
+        height={22}
+      />
+      {full && (
+        <span
+          style={{
+            fontSize: 12,
+            color: "var(--text-secondary)",
+          }}
+        >
+          — strategic naming &amp; brand architecture
+        </span>
+      )}
+    </footer>
   );
 }
 
@@ -37,7 +99,7 @@ function ProgressBar({
   return (
     <div
       style={{
-        height: 3,
+        height: 2,
         background: "var(--border)",
         borderRadius: 2,
         marginBottom: 48,
@@ -71,14 +133,15 @@ function PrimaryButton({
       onClick={disabled ? undefined : onClick}
       style={{
         background: "var(--accent)",
-        color: "#fff",
+        color: "#EEEEE1",
         border: "none",
-        padding: "14px 32px",
-        fontSize: 16,
+        padding: "14px 36px",
+        fontSize: 15,
         fontWeight: 500,
-        borderRadius: 8,
+        fontFamily: "var(--font-sans)",
+        borderRadius: 100,
         cursor: disabled ? "not-allowed" : "pointer",
-        transition: "background 0.2s",
+        transition: "all 0.2s",
         letterSpacing: "0.01em",
         opacity: disabled ? 0.4 : 1,
       }}
@@ -110,11 +173,23 @@ function SecondaryButton({
         background: "transparent",
         color: "var(--text-secondary)",
         border: "1px solid var(--border)",
-        padding: "10px 20px",
+        padding: "10px 24px",
         fontSize: 14,
-        borderRadius: 8,
+        fontFamily: "var(--font-sans)",
+        borderRadius: 100,
         cursor: "pointer",
         transition: "all 0.2s",
+      }}
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLButtonElement).style.borderColor =
+          "var(--border-strong)";
+        (e.currentTarget as HTMLButtonElement).style.color = "var(--text)";
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLButtonElement).style.borderColor =
+          "var(--border)";
+        (e.currentTarget as HTMLButtonElement).style.color =
+          "var(--text-secondary)";
       }}
     >
       {children}
@@ -126,36 +201,25 @@ function SecondaryButton({
 
 function WelcomeScreen({ onStart }: { onStart: () => void }) {
   return (
-    <div className="animate-fade-in" style={{ maxWidth: 560, margin: "80px auto 0" }}>
-      <p
-        style={{
-          fontSize: 13,
-          textTransform: "uppercase",
-          letterSpacing: "0.12em",
-          color: "var(--text-secondary)",
-          marginBottom: 16,
-          fontWeight: 500,
-        }}
-      >
-        Product Naming Tool
-      </p>
+    <div className="animate-fade-in" style={{ maxWidth: 560, margin: "40px auto 0" }}>
       <h1
         style={{
-          fontSize: 40,
-          fontWeight: 700,
+          fontFamily: "var(--font-serif)",
+          fontSize: 44,
+          fontWeight: 400,
           lineHeight: 1.15,
           marginBottom: 20,
-          letterSpacing: "-0.02em",
+          letterSpacing: "-0.01em",
         }}
       >
         What kind of name does your product need?
       </h1>
       <p
         style={{
-          fontSize: 18,
-          lineHeight: 1.6,
+          fontSize: 17,
+          lineHeight: 1.7,
           color: "var(--text-secondary)",
-          marginBottom: 40,
+          marginBottom: 44,
         }}
       >
         Answer a few questions about your product, and we&apos;ll tell you what
@@ -218,10 +282,11 @@ function QuizScreen({
         </p>
         <h2
           style={{
-            fontSize: 28,
-            fontWeight: 600,
+            fontFamily: "var(--font-serif)",
+            fontSize: 30,
+            fontWeight: 400,
             marginBottom: 8,
-            letterSpacing: "-0.01em",
+            lineHeight: 1.25,
           }}
         >
           {currentQ.question}
@@ -258,7 +323,7 @@ function QuizScreen({
                 (e.currentTarget as HTMLButtonElement).style.borderColor =
                   "var(--accent)";
                 (e.currentTarget as HTMLButtonElement).style.background =
-                  "#FDFCFB";
+                  "var(--card-hover)";
               }}
               onMouseLeave={(e) => {
                 (e.currentTarget as HTMLButtonElement).style.borderColor =
@@ -267,7 +332,9 @@ function QuizScreen({
                   "var(--card)";
               }}
             >
-              <span style={{ fontSize: 16, fontWeight: 500 }}>{opt.label}</span>
+              <span style={{ fontSize: 16, fontWeight: 500, color: "var(--text)" }}>
+                {opt.label}
+              </span>
               <span
                 style={{
                   fontSize: 14,
@@ -321,28 +388,28 @@ function ResultsScreen({
           fontSize: 13,
           textTransform: "uppercase",
           letterSpacing: "0.12em",
-          color: "var(--text-secondary)",
+          color: "var(--accent)",
           marginBottom: 16,
-          fontWeight: 500,
+          fontWeight: 600,
         }}
       >
         Your Result
       </p>
       <h1
         style={{
-          fontSize: 36,
-          fontWeight: 700,
+          fontFamily: "var(--font-serif)",
+          fontSize: 38,
+          fontWeight: 400,
           marginBottom: 8,
-          letterSpacing: "-0.02em",
         }}
       >
         {outcome.nameType}
       </h1>
       <p
         style={{
-          fontSize: 17,
+          fontSize: 16,
           color: "var(--text-secondary)",
-          lineHeight: 1.6,
+          lineHeight: 1.7,
           marginBottom: 32,
         }}
       >
@@ -378,7 +445,13 @@ function ResultsScreen({
           >
             Name Architecture
           </p>
-          <p style={{ fontSize: 18, fontWeight: 600 }}>
+          <p
+            style={{
+              fontFamily: "var(--font-serif)",
+              fontSize: 18,
+              fontWeight: 500,
+            }}
+          >
             {outcome.architecture}
           </p>
         </div>
@@ -465,7 +538,7 @@ function ResultsScreen({
         <div
           style={{
             background: "var(--warning-bg)",
-            border: "1px solid rgba(196, 169, 125, 0.25)",
+            border: "1px solid rgba(139, 105, 20, 0.15)",
             borderRadius: 10,
             padding: 20,
             marginBottom: 24,
@@ -554,7 +627,7 @@ function BrainstormScreen({
 
   return (
     <>
-      <ProgressBar progress={progress} color="var(--highlight-strong)" />
+      <ProgressBar progress={progress} color="var(--accent)" />
       <div className={animating ? "animate-out" : "animate-slide-in"}>
         <p
           style={{
@@ -569,10 +642,11 @@ function BrainstormScreen({
         </p>
         <h2
           style={{
-            fontSize: 26,
-            fontWeight: 600,
+            fontFamily: "var(--font-serif)",
+            fontSize: 28,
+            fontWeight: 400,
             marginBottom: 8,
-            letterSpacing: "-0.01em",
+            lineHeight: 1.25,
           }}
         >
           {bq.question}
@@ -604,11 +678,12 @@ function BrainstormScreen({
               fontSize: 15,
               border: "1.5px solid var(--border)",
               borderRadius: 10,
-              fontFamily: "inherit",
+              fontFamily: "var(--font-sans)",
               resize: "vertical",
               outline: "none",
               lineHeight: 1.5,
               background: "var(--card)",
+              color: "var(--text)",
               boxSizing: "border-box",
             }}
           />
@@ -626,9 +701,10 @@ function BrainstormScreen({
               fontSize: 15,
               border: "1.5px solid var(--border)",
               borderRadius: 10,
-              fontFamily: "inherit",
+              fontFamily: "var(--font-sans)",
               outline: "none",
               background: "var(--card)",
+              color: "var(--text)",
               boxSizing: "border-box",
             }}
           />
@@ -645,13 +721,14 @@ function BrainstormScreen({
                   style={{
                     padding: "10px 18px",
                     fontSize: 14,
-                    borderRadius: 24,
+                    borderRadius: 100,
                     border: `1.5px solid ${selected ? "var(--accent)" : "var(--border)"}`,
                     background: selected ? "var(--accent)" : "var(--card)",
-                    color: selected ? "#fff" : "var(--text)",
+                    color: selected ? "#EEEEE1" : "var(--text)",
                     cursor: "pointer",
                     transition: "all 0.2s",
                     fontWeight: selected ? 500 : 400,
+                    fontFamily: "var(--font-sans)",
                   }}
                 >
                   {chip}
@@ -679,7 +756,9 @@ function BrainstormScreen({
                 onClick={() => onUpdate(bq.id, opt.value)}
                 style={{
                   background:
-                    currentValue === opt.value ? "#F5F0EA" : "var(--card)",
+                    currentValue === opt.value
+                      ? "var(--accent-light)"
+                      : "var(--card)",
                   border: `1.5px solid ${currentValue === opt.value ? "var(--accent)" : "var(--border)"}`,
                   borderRadius: 10,
                   padding: "14px 18px",
@@ -688,6 +767,7 @@ function BrainstormScreen({
                   fontSize: 15,
                   transition: "all 0.2s",
                   fontWeight: currentValue === opt.value ? 500 : 400,
+                  color: "var(--text)",
                 }}
               >
                 {opt.label}
@@ -758,19 +838,19 @@ function BriefScreen({
           fontSize: 13,
           textTransform: "uppercase",
           letterSpacing: "0.12em",
-          color: "var(--text-secondary)",
+          color: "var(--accent)",
           marginBottom: 16,
-          fontWeight: 500,
+          fontWeight: 600,
         }}
       >
         Your Naming Brief
       </p>
       <h1
         style={{
-          fontSize: 32,
-          fontWeight: 700,
+          fontFamily: "var(--font-serif)",
+          fontSize: 34,
+          fontWeight: 400,
           marginBottom: 8,
-          letterSpacing: "-0.02em",
         }}
       >
         Here&apos;s what we&apos;re working with.
@@ -779,7 +859,7 @@ function BriefScreen({
         style={{
           fontSize: 16,
           color: "var(--text-secondary)",
-          lineHeight: 1.6,
+          lineHeight: 1.7,
           marginBottom: 32,
         }}
       >
@@ -797,16 +877,24 @@ function BriefScreen({
           marginBottom: 16,
         }}
       >
-        <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 20 }}>
+        <h3
+          style={{
+            fontFamily: "var(--font-serif)",
+            fontSize: 20,
+            fontWeight: 500,
+            marginBottom: 20,
+          }}
+        >
           Naming Brief Summary
         </h3>
 
         <div
           style={{
-            background: "#F8F6F3",
+            background: "var(--accent-light)",
             borderRadius: 8,
             padding: 16,
             marginBottom: 20,
+            borderLeft: "3px solid var(--accent)",
           }}
         >
           <p
@@ -821,7 +909,9 @@ function BriefScreen({
           >
             Recommended Name Type
           </p>
-          <p style={{ fontSize: 16, fontWeight: 600 }}>{outcome.nameType}</p>
+          <p style={{ fontSize: 16, fontWeight: 600, color: "var(--text)" }}>
+            {outcome.nameType}
+          </p>
           <p
             style={{
               fontSize: 13,
@@ -864,16 +954,22 @@ function BriefScreen({
       {/* Coming soon placeholder */}
       <div
         style={{
-          background:
-            "linear-gradient(135deg, rgba(232,221,208,0.25), rgba(196,169,125,0.13))",
-          border: "1.5px dashed var(--highlight-strong)",
+          background: "var(--accent-light)",
+          border: "1.5px dashed var(--accent)",
           borderRadius: 12,
           padding: 28,
           textAlign: "center",
           marginBottom: 32,
         }}
       >
-        <p style={{ fontSize: 20, fontWeight: 600, marginBottom: 8 }}>
+        <p
+          style={{
+            fontFamily: "var(--font-serif)",
+            fontSize: 20,
+            fontWeight: 500,
+            marginBottom: 8,
+          }}
+        >
           Name generation coming soon
         </p>
         <p
@@ -984,6 +1080,8 @@ export default function Home() {
         minHeight: "100vh",
       }}
     >
+      <Header />
+
       {screen === "welcome" && (
         <WelcomeScreen onStart={() => setScreen("quiz")} />
       )}
