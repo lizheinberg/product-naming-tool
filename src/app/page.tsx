@@ -8,6 +8,7 @@ import {
   type BrainstormQuestion,
 } from "@/lib/questions";
 import { getOutcome, type Outcome } from "@/lib/outcomes";
+import type { NameSuggestion } from "@/lib/types";
 
 // ─── Shared UI Components ──────────────────────────────────────
 
@@ -803,6 +804,51 @@ function BriefScreen({
   selectedChips: string[];
   onRestart: () => void;
 }) {
+  const [names, setNames] = useState<NameSuggestion[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const isDescriptive =
+    outcome.brainstormType === "descriptor" ||
+    outcome.brainstormType === "descriptive";
+
+  const generateNames = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    setNames([]);
+    try {
+      const res = await fetch("/api/generate-names", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          brainstormAnswers,
+          selectedChips,
+          outcome: {
+            nameType: outcome.nameType,
+            brainstormType: outcome.brainstormType,
+            architecture: outcome.architecture,
+          },
+        }),
+      });
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || "Failed to generate names.");
+      }
+      const data = await res.json();
+      setNames(data.names);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Something went wrong.");
+    } finally {
+      setLoading(false);
+    }
+  }, [brainstormAnswers, selectedChips, outcome]);
+
+  useEffect(() => {
+    if (isDescriptive) {
+      generateNames();
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const ba = brainstormAnswers;
   const toneList = selectedChips.join(", ");
   const intlMap: Record<string, string> = {
@@ -863,8 +909,9 @@ function BriefScreen({
           marginBottom: 32,
         }}
       >
-        This is the strategic brief for your naming project. In the full
-        version, this is where AI-powered name generation kicks in.
+        {isDescriptive
+          ? "Your strategic brief and AI-generated name suggestions."
+          : "Your strategic brief, ready to share with a naming specialist."}
       </p>
 
       {/* Summary card */}
@@ -951,41 +998,239 @@ function BriefScreen({
         ))}
       </div>
 
-      {/* Coming soon placeholder */}
-      <div
-        style={{
-          background: "var(--accent-light)",
-          border: "1.5px dashed var(--accent)",
-          borderRadius: 12,
-          padding: 28,
-          textAlign: "center",
-          marginBottom: 32,
-        }}
-      >
-        <p
+      {/* ─── Descriptive: AI Name Generation ─── */}
+      {isDescriptive && loading && (
+        <div
           style={{
-            fontFamily: "var(--font-serif)",
-            fontSize: 20,
-            fontWeight: 500,
-            marginBottom: 8,
+            background: "var(--accent-light)",
+            border: "1px solid var(--border)",
+            borderRadius: 12,
+            padding: 32,
+            textAlign: "center",
+            marginBottom: 32,
           }}
         >
-          Name generation coming soon
-        </p>
-        <p
+          <p
+            style={{
+              fontFamily: "var(--font-serif)",
+              fontSize: 20,
+              fontWeight: 500,
+              marginBottom: 8,
+            }}
+          >
+            Generating name suggestions&hellip;
+          </p>
+          <p
+            style={{
+              fontSize: 15,
+              color: "var(--text-secondary)",
+              lineHeight: 1.5,
+            }}
+          >
+            Analyzing your brief and brainstorming descriptive names.
+          </p>
+          <div style={{ marginTop: 20 }}>
+            <div
+              className="animate-pulse"
+              style={{
+                width: 48,
+                height: 4,
+                background: "var(--accent)",
+                borderRadius: 2,
+                margin: "0 auto",
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {isDescriptive && error && (
+        <div
           style={{
-            fontSize: 15,
-            color: "var(--text-secondary)",
-            lineHeight: 1.5,
-            maxWidth: 440,
-            margin: "0 auto",
+            background: "var(--high-bg)",
+            border: "1px solid rgba(139, 37, 0, 0.15)",
+            borderRadius: 12,
+            padding: 28,
+            textAlign: "center",
+            marginBottom: 32,
           }}
         >
-          In the full version, this is where AI-powered name brainstorming
-          happens — generating options based on your brief, with initial
-          trademark viability screening.
-        </p>
-      </div>
+          <p
+            style={{
+              fontFamily: "var(--font-serif)",
+              fontSize: 18,
+              fontWeight: 500,
+              marginBottom: 8,
+              color: "var(--high)",
+            }}
+          >
+            Something went wrong
+          </p>
+          <p
+            style={{
+              fontSize: 15,
+              color: "var(--text-secondary)",
+              marginBottom: 16,
+            }}
+          >
+            {error}
+          </p>
+          <PrimaryButton onClick={generateNames}>Try again</PrimaryButton>
+        </div>
+      )}
+
+      {isDescriptive && names.length > 0 && (
+        <div
+          style={{
+            background: "var(--card)",
+            border: "1px solid var(--border)",
+            borderRadius: 12,
+            padding: 28,
+            marginBottom: 32,
+          }}
+        >
+          <h3
+            style={{
+              fontFamily: "var(--font-serif)",
+              fontSize: 20,
+              fontWeight: 500,
+              marginBottom: 4,
+            }}
+          >
+            Name Suggestions
+          </h3>
+          <p
+            style={{
+              fontSize: 14,
+              color: "var(--text-secondary)",
+              marginBottom: 20,
+            }}
+          >
+            Based on your brief, here are descriptive name options to consider.
+          </p>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {names.map((n, i) => (
+              <div
+                key={i}
+                style={{
+                  background: "var(--bg)",
+                  border: "1px solid var(--border)",
+                  borderRadius: 10,
+                  padding: "16px 20px",
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: 17,
+                    fontWeight: 600,
+                    fontFamily: "var(--font-serif)",
+                    marginBottom: 4,
+                    color: "var(--text)",
+                  }}
+                >
+                  {outcome.brainstormType === "descriptor" &&
+                  ba.parent_brand_name
+                    ? `${ba.parent_brand_name} ${n.name}`
+                    : n.name}
+                </p>
+                <p
+                  style={{
+                    fontSize: 14,
+                    color: "var(--text-secondary)",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {n.rationale}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ marginTop: 20, textAlign: "center" }}>
+            <SecondaryButton onClick={generateNames}>
+              Regenerate names
+            </SecondaryButton>
+          </div>
+        </div>
+      )}
+
+      {/* ─── Proprietary: Human Expertise Message ─── */}
+      {!isDescriptive && (
+        <div
+          style={{
+            background: "var(--card)",
+            border: "1px solid var(--border)",
+            borderRadius: 12,
+            padding: 32,
+            textAlign: "center",
+            marginBottom: 32,
+          }}
+        >
+          <div
+            style={{
+              width: 48,
+              height: 48,
+              background: "var(--accent-light)",
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: "0 auto 16px",
+              fontSize: 22,
+              color: "var(--accent)",
+            }}
+          >
+            &#10022;
+          </div>
+          <h3
+            style={{
+              fontFamily: "var(--font-serif)",
+              fontSize: 22,
+              fontWeight: 500,
+              marginBottom: 12,
+            }}
+          >
+            This name needs a human touch
+          </h3>
+          <p
+            style={{
+              fontSize: 15,
+              color: "var(--text-secondary)",
+              lineHeight: 1.7,
+              maxWidth: 480,
+              margin: "0 auto 16px",
+            }}
+          >
+            {outcome.brainstormType === "coined"
+              ? "Coined and freestanding names require deep creative exploration, cultural sensitivity testing, and extensive trademark screening. This is work that demands human judgment and strategic expertise\u200A\u2014\u200AAI isn\u2019t quite ready for it yet."
+              : "Creative brand names need strategic nuance, emotional resonance, and careful trademark navigation. This level of naming work benefits from human expertise that AI can\u2019t yet replicate."}
+          </p>
+          <p
+            style={{
+              fontSize: 14,
+              color: "var(--text-secondary)",
+              lineHeight: 1.6,
+              maxWidth: 440,
+              margin: "0 auto",
+            }}
+          >
+            Your brief above is ready to hand off to a naming specialist.{" "}
+            <a
+              href="https://www.prequel.agency"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                color: "var(--accent)",
+                textDecoration: "none",
+                fontWeight: 500,
+              }}
+            >
+              Get in touch with Prequel &rarr;
+            </a>
+          </p>
+        </div>
+      )}
 
       <SecondaryButton onClick={onRestart}>Start over</SecondaryButton>
       <Footer full />
