@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #FAF9F7;
+  --card: #FFFFFF;
+  --text: #1A1A1A;
+  --text-secondary: #6B6B6B;
+  --accent: #2D2D2D;
+  --accent-hover: #444444;
+  --border: #E8E5E0;
+  --highlight: #E8DDD0;
+  --highlight-strong: #C4A97D;
+  --success: #2E7D4F;
+  --success-bg: #EDF7F0;
+  --warning: #B8860B;
+  --warning-bg: #FFF8E7;
+  --high: #8B2500;
+  --high-bg: #FFF0EC;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease forwards;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease forwards;
+}
+
+.animate-out {
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: all 0.25s ease;
+}
+
+/* Focus styles */
+textarea:focus, input:focus {
+  outline: none;
+  border-color: var(--accent) !important;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
