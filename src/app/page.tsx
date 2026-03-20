@@ -5,6 +5,7 @@ import Image from "next/image";
 import {
   decisionTreeQuestions,
   brainstormQuestions,
+  descriptiveBrainstormQuestions,
   type BrainstormQuestion,
 } from "@/lib/questions";
 import { getOutcome, type Outcome } from "@/lib/outcomes";
@@ -561,7 +562,11 @@ function ResultsScreen({
       <div style={{ display: "flex", gap: 12, marginTop: 32 }}>
         {outcome.needsBrainstorm && (
           <PrimaryButton onClick={onBrainstorm}>
-            Brainstorm names &rarr;
+            {outcome.brainstormType === "descriptor" ||
+            outcome.brainstormType === "descriptive"
+              ? "Brainstorm names"
+              : "Create a Naming Brief"}{" "}
+            &rarr;
           </PrimaryButton>
         )}
         <SecondaryButton onClick={onRestart}>Start over</SecondaryButton>
@@ -578,6 +583,7 @@ function BrainstormScreen({
   onBack,
   selectedChips,
   onChipToggle,
+  brainstormType,
 }: {
   brainstormAnswers: Record<string, string | string[]>;
   onUpdate: (id: string, value: string | string[]) => void;
@@ -585,12 +591,19 @@ function BrainstormScreen({
   onBack: () => void;
   selectedChips: string[];
   onChipToggle: (chip: string) => void;
+  brainstormType?: "descriptor" | "descriptive" | "creative" | "coined";
 }) {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [animating, setAnimating] = useState(false);
 
-  const bq = brainstormQuestions[currentIdx];
-  const progress = (currentIdx / brainstormQuestions.length) * 100;
+  const isDescriptivePath =
+    brainstormType === "descriptor" || brainstormType === "descriptive";
+  const questions = isDescriptivePath
+    ? descriptiveBrainstormQuestions
+    : brainstormQuestions;
+
+  const bq = questions[currentIdx];
+  const progress = (currentIdx / questions.length) * 100;
   const currentValue =
     (brainstormAnswers[bq.id] as string) || "";
   const isChips = bq.type === "chips";
@@ -603,7 +616,7 @@ function BrainstormScreen({
     if (isChips) {
       onUpdate(bq.id, selectedChips);
     }
-    if (currentIdx < brainstormQuestions.length - 1) {
+    if (currentIdx < questions.length - 1) {
       setAnimating(true);
       setTimeout(() => {
         setCurrentIdx(currentIdx + 1);
@@ -638,8 +651,8 @@ function BrainstormScreen({
             fontWeight: 500,
           }}
         >
-          Name Brainstorm — Question {currentIdx + 1} of{" "}
-          {brainstormQuestions.length}
+          {isDescriptivePath ? "Name Brainstorm" : "Naming Brief"} — Question{" "}
+          {currentIdx + 1} of {questions.length}
         </p>
         <h2
           style={{
@@ -779,7 +792,7 @@ function BrainstormScreen({
 
         <div style={{ display: "flex", gap: 12, marginTop: 32 }}>
           <PrimaryButton onClick={handleNext} disabled={!canProceed}>
-            {currentIdx === brainstormQuestions.length - 1
+            {currentIdx === questions.length - 1
               ? "Generate brief"
               : "Next \u2192"}
           </PrimaryButton>
@@ -1355,6 +1368,7 @@ export default function Home() {
           onBack={() => setScreen("results")}
           selectedChips={selectedChips}
           onChipToggle={handleChipToggle}
+          brainstormType={outcome.brainstormType}
         />
       )}
 

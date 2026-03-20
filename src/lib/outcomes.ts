@@ -81,7 +81,7 @@ export function getOutcome(answers: Record<string, string>): Outcome {
   if (lifespan === "short" && market_factors === "advantage") {
     if (positioning === "non_core") {
       return {
-        nameType: "Endorsed Brand",
+        nameType: "Proprietary / Intuitive to Associative",
         nameTypeDetail:
           "A name with its own identity, but visibly connected to the parent. Good for when you want credibility from the parent brand but need to signal something new.",
         architecture: "Endorsed Brand",
@@ -94,7 +94,7 @@ export function getOutcome(answers: Record<string, string>): Outcome {
       };
     }
     return {
-      nameType: "Sub-Brand",
+      nameType: "Proprietary / Intuitive to Associative",
       nameTypeDetail:
         "A name that lives under the parent brand. It gets its own identity but stays clearly connected.",
       architecture: "Sub-Brand",
@@ -116,7 +116,7 @@ export function getOutcome(answers: Record<string, string>): Outcome {
     resources === "above"
   ) {
     return {
-      nameType: "Freestanding / Coined Name",
+      nameType: "Proprietary / Intuitive to Associative",
       nameTypeDetail:
         "A completely original, proprietary name with no visible connection to the parent brand. This is the highest level of naming investment — and the hardest to get right.",
       architecture: "Freestanding Brand",
@@ -138,7 +138,7 @@ export function getOutcome(answers: Record<string, string>): Outcome {
     resources === "below"
   ) {
     return {
-      nameType: "Endorsed Brand",
+      nameType: "Proprietary / Intuitive to Associative",
       nameTypeDetail:
         "A name with its own identity, endorsed by the parent brand. This lets you signal something new without bearing the full cost of building a brand from scratch.",
       architecture: "Endorsed Brand",
@@ -159,7 +159,7 @@ export function getOutcome(answers: Record<string, string>): Outcome {
   ) {
     if (parent_brand === "yes") {
       return {
-        nameType: "Sub-Brand",
+        nameType: "Proprietary / Intuitive to Associative",
         nameTypeDetail:
           "A distinctive name that lives under the parent brand. Strongest option when you have a competitive advantage within your core business and want to leverage existing brand equity.",
         architecture: "Sub-Brand",
@@ -172,7 +172,7 @@ export function getOutcome(answers: Record<string, string>): Outcome {
       };
     }
     return {
-      nameType: "Freestanding / Coined Name",
+      nameType: "Proprietary / Intuitive to Associative",
       nameTypeDetail:
         "A completely original, proprietary name. Since this sits within your core business but doesn't need to connect to the parent, you have creative freedom — but you also have a bigger branding job ahead.",
       architecture: "Freestanding Brand",
@@ -194,7 +194,7 @@ export function getOutcome(answers: Record<string, string>): Outcome {
     resources === "below"
   ) {
     return {
-      nameType: "Sub-Brand",
+      nameType: "Proprietary / Intuitive to Associative",
       nameTypeDetail:
         "A name under the parent brand umbrella. With limited resources, leveraging the parent brand's equity is the smart move.",
       architecture: "Sub-Brand",
@@ -211,7 +211,7 @@ export function getOutcome(answers: Record<string, string>): Outcome {
   if (market_factors === "parity" && positioning === "non_core") {
     if (resources === "above") {
       return {
-        nameType: "Endorsed Brand",
+        nameType: "Proprietary / Intuitive to Associative",
         nameTypeDetail:
           "An endorsed name makes sense here. You're at parity in a non-core area, so the parent brand endorsement adds credibility while giving the product its own identity.",
         architecture: "Endorsed Brand",

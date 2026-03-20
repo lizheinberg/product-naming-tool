@@ -270,3 +270,10 @@ export const brainstormQuestions: BrainstormQuestion[] = [
     ],
   },
 ];
+
+// Descriptive path: skip tone, explore_themes, avoid_themes (questions 6-8)
+const descriptiveSkipIds = new Set(["tone", "explore_themes", "avoid_themes"]);
+
+export const descriptiveBrainstormQuestions = brainstormQuestions.filter(
+  (q) => !descriptiveSkipIds.has(q.id)
+);
