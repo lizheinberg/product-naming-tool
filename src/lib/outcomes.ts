@@ -1,268 +1,246 @@
-export interface Outcome {
+export interface DecisionOutcome {
+  architectureType: "monolithic" | "endorsed" | "hybrid" | "discrete";
+  architectureLabel: string;
+  architectureDescription: string;
   nameType: string;
-  nameTypeDetail: string;
-  architecture: string;
-  investmentLevel: "Light" | "Light to Moderate" | "Moderate" | "Moderate to High" | "High" | "Minimal" | "Varies";
-  investmentDetail: string;
-  examples: string;
-  needsBrainstorm: boolean;
-  brainstormType?: "descriptor" | "descriptive" | "creative" | "coined";
-  disclaimer?: string;
+  nameDescription: string;
+  investmentLevel: "high" | "moderate" | "low";
+  investmentLabel: string;
+  investmentDescription: string;
+  considerations: string[];
 }
 
-export function getOutcome(answers: Record<string, string>): Outcome {
-  // ── Existing product paths ──────────────────────────────
-  if (answers.classification === "existing") {
-    if (answers.existing_type === "line_extension") {
-      return {
-        nameType: "Line Extension",
-        nameTypeDetail:
-          "Use your existing product name with a new descriptor (flavor, tier, size, etc.)",
-        architecture: "Descriptive Extension",
-        investmentLevel: "Light",
-        investmentDetail:
-          "Descriptor development and trademark check. No new brand name needed.",
-        examples: "Think: iPhone 16, Coke Zero, Tide Pods",
-        needsBrainstorm: true,
-        brainstormType: "descriptor",
-      };
+export function getOutcome(
+  answers: Record<string, string>
+): DecisionOutcome {
+  const {
+    brand_role,
+    name_coverage,
+    trademark,
+    budget,
+    hold_period,
+    existing_equity,
+  } = answers;
+
+  // ── Step 1: Determine architecture type from brand role + name coverage ──
+
+  let architectureType: DecisionOutcome["architectureType"];
+
+  if (brand_role === "corporate") {
+    architectureType = "discrete";
+  } else if (brand_role === "umbrella") {
+    if (name_coverage === "broad") {
+      architectureType = "monolithic";
+    } else if (name_coverage === "stretch") {
+      architectureType = "hybrid";
+    } else {
+      // narrow — name can't support umbrella role
+      architectureType = "discrete";
     }
-    if (answers.existing_type === "new_market") {
-      return {
-        nameType: "Market Adaptation",
-        nameTypeDetail:
-          "Keep your existing product name, but you may need a new descriptor or tagline for the new market.",
-        architecture: "Endorsed or Descriptive",
-        investmentLevel: "Light to Moderate",
-        investmentDetail:
-          "Market research, possible descriptor work, and trademark clearance in new markets.",
-        examples:
-          "Think: Uber Eats (new market), Google Workspace (rebrand for enterprise)",
-        needsBrainstorm: true,
-        brainstormType: "descriptor",
-      };
-    }
-    if (answers.existing_type === "next_gen") {
-      return {
-        nameType: "Next Generation",
-        nameTypeDetail:
-          "Keep your existing product name with the existing or updated version descriptor.",
-        architecture: "Existing Brand",
-        investmentLevel: "Minimal",
-        investmentDetail:
-          "Version numbering or generational naming convention. Minimal creative work needed.",
-        examples: "Think: PlayStation 5, macOS Ventura, Windows 11",
-        needsBrainstorm: false,
-      };
+  } else {
+    // endorsed
+    if (name_coverage === "narrow") {
+      architectureType = "hybrid";
+    } else {
+      architectureType = "endorsed";
     }
   }
 
-  // ── New product paths ───────────────────────────────────
-  const { lifespan, market_factors, positioning, resources, parent_brand } =
-    answers;
-
-  // Short lifespan + parity
-  if (lifespan === "short" && market_factors === "parity") {
-    return {
-      nameType: "Descriptive / Generic Name",
-      nameTypeDetail:
-        "A straightforward, descriptive name that communicates what the product does. No need for a coined or proprietary name.",
-      architecture: "Descriptive",
-      investmentLevel: "Light",
-      investmentDetail:
-        "Descriptor development with basic trademark screening. Minimal brand-building required.",
-      examples: "Think: Amazon Prime Video, Google Maps, Microsoft Teams",
-      needsBrainstorm: true,
-      brainstormType: "descriptive",
-    };
+  // Short hold + no budget downgrades ambitions
+  if (budget === "no" && hold_period === "short") {
+    if (architectureType === "monolithic") architectureType = "endorsed";
+    if (architectureType === "hybrid") architectureType = "discrete";
   }
 
-  // Short lifespan + advantage
-  if (lifespan === "short" && market_factors === "advantage") {
-    if (positioning === "non_core") {
-      return {
-        nameType: "Proprietary / Intuitive to Associative",
-        nameTypeDetail:
-          "A name with its own identity, but visibly connected to the parent. Good for when you want credibility from the parent brand but need to signal something new.",
-        architecture: "Endorsed Brand",
-        investmentLevel: "Moderate",
-        investmentDetail:
-          "Creative naming, trademark screening, and brand identity development. Some launch marketing budget needed.",
-        examples: "Think: Courtyard by Marriott, Polo by Ralph Lauren",
-        needsBrainstorm: true,
-        brainstormType: "creative",
-      };
-    }
-    return {
-      nameType: "Proprietary / Intuitive to Associative",
-      nameTypeDetail:
-        "A name that lives under the parent brand. It gets its own identity but stays clearly connected.",
-      architecture: "Sub-Brand",
-      investmentLevel: "Moderate",
-      investmentDetail:
-        "Naming strategy, creative development, trademark clearance, and brand guidelines. Moderate launch investment.",
-      examples: "Think: Apple TV+, Nike Air, Amazon Prime",
-      needsBrainstorm: true,
-      brainstormType: "creative",
-    };
+  // ── Step 2: Determine investment level from hold period + budget ──
+
+  let investmentLevel: DecisionOutcome["investmentLevel"];
+
+  if (hold_period === "short") {
+    investmentLevel = "low";
+  } else if (hold_period === "long" && budget === "yes") {
+    investmentLevel = architectureType === "discrete" ? "moderate" : "high";
+  } else if (hold_period === "standard" && budget === "yes") {
+    investmentLevel = architectureType === "discrete" ? "low" : "moderate";
+  } else {
+    // standard or long hold, but no budget
+    investmentLevel = "low";
   }
 
-  // ── Long lifespan paths ─────────────────────────────────
+  // ── Step 3: Architecture descriptions ──
 
-  // Advantage + non-core + above resources = freestanding
-  if (
-    market_factors === "advantage" &&
-    positioning === "non_core" &&
-    resources === "above"
+  const archDescriptions: Record<
+    DecisionOutcome["architectureType"],
+    { label: string; description: string }
+  > = {
+    monolithic: {
+      label: "Monolithic",
+      description:
+        "Unify all portfolio companies under a single holdco brand. The holdco name becomes the primary brand identity across the portfolio — every acquisition adopts it.",
+    },
+    endorsed: {
+      label: "Endorsed",
+      description:
+        'Portfolio companies retain their own brand identities, with the holdco name serving as a credibility endorsement — "a [HoldCo] company." The holdco brand adds trust without replacing individual brands.',
+    },
+    hybrid: {
+      label: "Hybrid",
+      description:
+        "Use the holdco brand as the primary identity where it fits naturally, while portfolio companies in less-aligned areas maintain independent brands with optional endorsement. This gives you flexibility as the portfolio evolves.",
+    },
+    discrete: {
+      label: "Discrete",
+      description:
+        "Portfolio companies operate as fully independent brands. The holdco name serves a corporate and legal function only — it doesn't need to resonate with end customers.",
+    },
+  };
+
+  // ── Step 4: Determine name type from architecture + inputs ──
+
+  let nameType: string;
+  let nameDescription: string;
+
+  if (architectureType === "discrete" && brand_role === "corporate") {
+    nameType = "Functional name";
+    nameDescription =
+      "Your holdco name serves a legal and administrative purpose. It doesn't need to carry brand weight, tell a story, or appeal to customers — it just needs to be clear and protectable.";
+  } else if (
+    architectureType === "discrete" &&
+    brand_role === "umbrella" &&
+    name_coverage === "narrow"
   ) {
-    return {
-      nameType: "Proprietary / Intuitive to Associative",
-      nameTypeDetail:
-        "A completely original, proprietary name with no visible connection to the parent brand. This is the highest level of naming investment — and the hardest to get right.",
-      architecture: "Freestanding Brand",
-      investmentLevel: "High",
-      investmentDetail:
-        "Full naming project: strategy, extensive creative development, comprehensive trademark search, brand identity system, and significant launch marketing.",
-      examples: "Think: Acura (Honda), Lexus (Toyota), AWS (Amazon)",
-      needsBrainstorm: true,
-      brainstormType: "coined",
-      disclaimer:
-        "Coined names are the most challenging type of naming work. The creative exploration is broader, trademark clearance is harder, and the investment in brand-building is significant. Most companies underestimate what this takes.",
-    };
-  }
-
-  // Advantage + non-core + below resources = endorsed
-  if (
-    market_factors === "advantage" &&
-    positioning === "non_core" &&
-    resources === "below"
-  ) {
-    return {
-      nameType: "Proprietary / Intuitive to Associative",
-      nameTypeDetail:
-        "A name with its own identity, endorsed by the parent brand. This lets you signal something new without bearing the full cost of building a brand from scratch.",
-      architecture: "Endorsed Brand",
-      investmentLevel: "Moderate",
-      investmentDetail:
-        "Creative naming, trademark screening, brand identity basics. The parent brand does some of the heavy lifting.",
-      examples: "Think: Courtyard by Marriott, Polo by Ralph Lauren",
-      needsBrainstorm: true,
-      brainstormType: "creative",
-    };
-  }
-
-  // Advantage + core + above resources
-  if (
-    market_factors === "advantage" &&
-    positioning === "core" &&
-    resources === "above"
-  ) {
-    if (parent_brand === "yes") {
-      return {
-        nameType: "Proprietary / Intuitive to Associative",
-        nameTypeDetail:
-          "A distinctive name that lives under the parent brand. Strongest option when you have a competitive advantage within your core business and want to leverage existing brand equity.",
-        architecture: "Sub-Brand",
-        investmentLevel: "Moderate to High",
-        investmentDetail:
-          "Naming strategy, creative development, trademark clearance, brand guidelines, and meaningful launch investment.",
-        examples: "Think: iPhone (Apple), Pixel (Google), Prime (Amazon)",
-        needsBrainstorm: true,
-        brainstormType: "creative",
-      };
+    if (existing_equity === "significant") {
+      nameType = "Name evolution needed";
+      nameDescription =
+        "Your current name carries equity but can't support the umbrella role you envision. Consider evolving the name to be broader while preserving the recognition you've built — or shift to an endorsed architecture that works with the name as-is.";
+    } else {
+      nameType = "New name recommended";
+      nameDescription =
+        "Your current name is too narrow for the umbrella role you want it to play, and there's little equity to protect. This is a good time to develop a new, broader platform name — or reconsider whether an endorsed or discrete architecture better fits your reality.";
     }
-    return {
-      nameType: "Proprietary / Intuitive to Associative",
-      nameTypeDetail:
-        "A completely original, proprietary name. Since this sits within your core business but doesn't need to connect to the parent, you have creative freedom — but you also have a bigger branding job ahead.",
-      architecture: "Freestanding Brand",
-      investmentLevel: "High",
-      investmentDetail:
-        "Full naming project: strategy, extensive creative development, comprehensive trademark search, brand identity system, and significant launch marketing.",
-      examples: "Think: Acura (Honda), Lexus (Toyota)",
-      needsBrainstorm: true,
-      brainstormType: "coined",
-      disclaimer:
-        "Coined names are the most challenging type of naming work. The creative exploration is broader, trademark clearance is harder, and the investment in brand-building is significant.",
-    };
-  }
-
-  // Advantage + core + below resources = sub-brand
-  if (
-    market_factors === "advantage" &&
-    positioning === "core" &&
-    resources === "below"
-  ) {
-    return {
-      nameType: "Proprietary / Intuitive to Associative",
-      nameTypeDetail:
-        "A name under the parent brand umbrella. With limited resources, leveraging the parent brand's equity is the smart move.",
-      architecture: "Sub-Brand",
-      investmentLevel: "Moderate",
-      investmentDetail:
-        "Naming strategy, creative development, trademark clearance. The parent brand reduces your marketing burden.",
-      examples: "Think: Nike Air, Apple TV+, Amazon Fresh",
-      needsBrainstorm: true,
-      brainstormType: "creative",
-    };
-  }
-
-  // Parity + non-core
-  if (market_factors === "parity" && positioning === "non_core") {
-    if (resources === "above") {
-      return {
-        nameType: "Proprietary / Intuitive to Associative",
-        nameTypeDetail:
-          "An endorsed name makes sense here. You're at parity in a non-core area, so the parent brand endorsement adds credibility while giving the product its own identity.",
-        architecture: "Endorsed Brand",
-        investmentLevel: "Moderate",
-        investmentDetail:
-          "Creative naming, trademark screening, brand identity development with parent brand integration.",
-        examples: "Think: Courtyard by Marriott, Fairfield by Marriott",
-        needsBrainstorm: true,
-        brainstormType: "creative",
-      };
+  } else if (architectureType === "monolithic") {
+    if (name_coverage === "broad" && trademark === "cleared") {
+      nameType = "Platform brand";
+      nameDescription =
+        "Your name has the breadth and legal protection to serve as a unifying platform brand across the portfolio. Invest in building it as the single face of the organization.";
+    } else {
+      nameType = "Platform brand — gaps to address";
+      nameDescription =
+        "Your name has the potential to unify the portfolio, but there are trademark or coverage gaps to address before going all-in on a monolithic identity. Close these gaps before scaling the brand.";
     }
-    return {
-      nameType: "Descriptive / Generic Name",
-      nameTypeDetail:
-        "A straightforward, descriptive name. Without differentiation, limited resources, and a non-core positioning, a descriptive approach is the pragmatic call.",
-      architecture: "Descriptive",
-      investmentLevel: "Light",
-      investmentDetail:
-        "Descriptor development with basic trademark screening.",
-      examples: "Think: Google Maps, Amazon Music, Microsoft Teams",
-      needsBrainstorm: true,
-      brainstormType: "descriptive",
-    };
+  } else if (architectureType === "endorsed") {
+    if (name_coverage === "broad") {
+      nameType = "Endorser brand";
+      nameDescription =
+        "Your holdco name works well as an endorser — broad enough to add credibility across the portfolio without constraining individual company brands.";
+    } else {
+      nameType = "Endorser brand — refinement needed";
+      nameDescription =
+        "The name can serve an endorsement role, but its fit across the full portfolio isn't seamless. A subtle positioning refresh could strengthen its endorsement power.";
+    }
+  } else {
+    // hybrid
+    if (existing_equity === "significant") {
+      nameType = "Flexible brand — leverage existing equity";
+      nameDescription =
+        "Your name has recognition worth preserving. Use it as the primary brand where it fits naturally, and deploy it as an endorser elsewhere. Over time, you can expand its reach as the portfolio matures.";
+    } else {
+      nameType = "Flexible brand";
+      nameDescription =
+        "A hybrid architecture gives you room to lead with the holdco brand where it fits and step back where it doesn't. This is a pragmatic approach while the portfolio strategy crystallizes.";
+    }
   }
 
-  // Parity + core
-  if (market_factors === "parity" && positioning === "core") {
-    return {
-      nameType: "Descriptive Sub-Brand",
-      nameTypeDetail:
-        "A descriptive name under the parent brand. When you're at parity within your core business, lean on the parent brand and keep the name functional.",
-      architecture: "Descriptive Sub-Brand",
-      investmentLevel: "Light to Moderate",
-      investmentDetail:
-        "Descriptor strategy and trademark check. Parent brand carries the weight.",
-      examples: "Think: Apple Music, Google Docs, Amazon Fresh",
-      needsBrainstorm: true,
-      brainstormType: "descriptive",
-    };
+  // ── Step 5: Investment level descriptions ──
+
+  const investmentDescriptions: Record<
+    DecisionOutcome["investmentLevel"],
+    { label: string; description: string }
+  > = {
+    high: {
+      label: "High investment",
+      description:
+        "Full brand build-out: identity system, naming architecture guidelines, brand activation strategy, and coordinated rollout across the portfolio. Justified by your hold period and the central role the brand will play.",
+    },
+    moderate: {
+      label: "Moderate investment",
+      description:
+        "Targeted brand development: address key gaps in trademark coverage, refine the visual identity, and establish brand guidelines. Focus spending where it has the most strategic impact.",
+    },
+    low: {
+      label: "Low investment",
+      description:
+        "Minimal brand investment: ensure legal protections are in place and the name functions for its intended purpose. Allocate resources to the portfolio companies instead.",
+    },
+  };
+
+  // ── Step 6: Build contextual considerations ──
+
+  const considerations: string[] = [];
+
+  if (trademark === "none") {
+    considerations.push(
+      "Conduct a comprehensive trademark search before making any architecture decisions. Uncleared names carry legal risk that grows with every acquisition."
+    );
+  } else if (trademark === "partial") {
+    considerations.push(
+      "Fill trademark gaps — ensure filings cover all current and anticipated G&S classes and international territories relevant to the portfolio."
+    );
   }
 
-  // Fallback
+  if (
+    existing_equity === "significant" &&
+    (architectureType === "discrete" || name_coverage === "narrow")
+  ) {
+    considerations.push(
+      "Your name carries meaningful equity. Walking away from it has real costs — factor the value of existing recognition into any naming decision."
+    );
+  } else if (
+    existing_equity === "minimal" &&
+    architectureType !== "discrete"
+  ) {
+    considerations.push(
+      "With limited existing brand equity, the cost of change is low. If the name doesn't fit the architecture, now is the ideal time to act."
+    );
+  }
+
+  if (budget === "no" && architectureType !== "discrete") {
+    considerations.push(
+      "Limited budget constrains the architecture you can realistically execute. A simpler brand structure (endorsed or discrete) may be more practical until resources are available."
+    );
+  }
+
+  if (hold_period === "short") {
+    considerations.push(
+      "With a short hold period, focus on making the brand functional rather than aspirational. Protect it legally, keep it clean, and invest energy in the portfolio companies."
+    );
+  } else if (hold_period === "long") {
+    considerations.push(
+      "A long hold period means the brand will compound in value over time. Early investment in getting the name and architecture right pays dividends across every future acquisition."
+    );
+  }
+
+  if (brand_role === "umbrella" && architectureType === "discrete") {
+    considerations.push(
+      "You want an umbrella brand, but the current name can't support that role. Either invest in a new name that enables monolithic architecture, or adjust your brand strategy to endorsed or discrete."
+    );
+  }
+
+  if (brand_role === "endorsed" && name_coverage === "narrow") {
+    considerations.push(
+      "Even an endorsement role requires the name to be credible across the portfolio. A name tied to a specific sector may undermine the endorsement's value in unrelated areas."
+    );
+  }
+
   return {
-    nameType: "Custom Assessment Needed",
-    nameTypeDetail:
-      "Your situation doesn't map neatly to a standard naming path. That's not a bad thing — it just means the answer requires more nuance than a decision tree can provide.",
-    architecture: "TBD",
-    investmentLevel: "Varies",
-    investmentDetail:
-      "We'd recommend talking to a naming strategist to work through the specifics.",
-    examples: "",
-    needsBrainstorm: false,
+    architectureType,
+    architectureLabel: archDescriptions[architectureType].label,
+    architectureDescription: archDescriptions[architectureType].description,
+    nameType,
+    nameDescription,
+    investmentLevel,
+    investmentLabel: investmentDescriptions[investmentLevel].label,
+    investmentDescription: investmentDescriptions[investmentLevel].description,
+    considerations,
   };
 }

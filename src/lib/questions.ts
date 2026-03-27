@@ -14,266 +14,156 @@ export interface Question {
 
 export const decisionTreeQuestions: Question[] = [
   {
-    id: "classification",
-    question: "How will customers see this offering?",
+    id: "brand_role",
+    question: "What role will the holdco brand play across the portfolio?",
     subtext:
-      "This determines whether you're building something new or evolving what exists.",
+      "This determines how much the holdco name matters to your customers and stakeholders.",
     options: [
       {
-        label: "Brand new product or service",
+        label: "Customer-facing umbrella",
         description:
-          "Customers will see this as something that didn't exist before",
-        value: "new",
+          "Portfolio companies will operate under the holdco name",
+        value: "umbrella",
       },
       {
-        label: "Update or extension of something existing",
+        label: "Endorsed identity",
         description:
-          "It's a new version, line extension, or refresh of a current product",
-        value: "existing",
+          'Portfolio companies keep their names, endorsed as "a [holdco] company"',
+        value: "endorsed",
+      },
+      {
+        label: "Pure holding company",
+        description:
+          "Back-office / corporate entity — not customer-facing",
+        value: "corporate",
       },
     ],
   },
   {
-    id: "existing_type",
-    question: "What kind of change is this?",
-    subtext: "Different types of changes call for different naming approaches.",
-    condition: (answers) => answers.classification === "existing",
+    id: "name_coverage",
+    question:
+      "Could the holdco name credibly cover the full range of portfolio companies and planned acquisitions?",
+    subtext:
+      "Think about where the platform is headed, not just where it is today.",
+    condition: (answers) =>
+      answers.brand_role === "umbrella" || answers.brand_role === "endorsed",
     options: [
       {
-        label: "Line extension",
+        label: "Yes — it's broad enough",
         description:
-          "Adding a new flavor, size, tier, or variant to an existing product line",
-        value: "line_extension",
+          "The name works across the current and anticipated portfolio",
+        value: "broad",
       },
       {
-        label: "New market or segment",
+        label: "It's a stretch",
         description:
-          "Taking an existing product into a new audience or geography",
-        value: "new_market",
+          "It could work but might feel like a reach in some areas",
+        value: "stretch",
       },
       {
-        label: "Next generation",
+        label: "No — it's too narrow",
         description:
-          "A significant upgrade or evolution of the current product",
-        value: "next_gen",
+          "The name is tied to a specific sector or service that doesn't cover the full scope",
+        value: "narrow",
       },
     ],
   },
   {
-    id: "lifespan",
-    question: "How long will this product be in market?",
+    id: "trademark",
+    question:
+      "Has the holdco name cleared the requisite trademark G&S and International Classes?",
     subtext:
-      "Longer-lived products generally justify more investment in naming.",
-    condition: (answers) => answers.classification === "new",
+      "Trademark coverage needs to span the full scope of the portfolio — not just the original business.",
     options: [
       {
-        label: "5+ years",
+        label: "Yes — fully cleared",
         description:
-          "This is a long-term play — a core part of the business going forward",
-        value: "long",
+          "Filed and cleared across all relevant classes for the portfolio scope",
+        value: "cleared",
       },
       {
-        label: "Less than 5 years",
+        label: "Partially or in progress",
+        description: "Some filings in place, but gaps remain",
+        value: "partial",
+      },
+      {
+        label: "No, or we haven't checked",
         description:
-          "Shorter lifespan — seasonal, campaign-driven, or limited run",
-        value: "short",
+          "No comprehensive trademark review has been done",
+        value: "none",
       },
     ],
   },
   {
-    id: "market_factors",
-    question: "Does this product have a competitive edge?",
+    id: "budget",
+    question:
+      "Will there be adequate resources to develop and support the brand?",
     subtext:
-      "Products with real differentiation earn more naming investment.",
-    condition: (answers) => answers.classification === "new",
+      "Brand building requires sustained investment — consider design, marketing, legal, and rollout costs.",
     options: [
       {
-        label: "Yes — clear competitive advantage",
-        description: "It does something competitors can't match (yet)",
-        value: "advantage",
-      },
-      {
-        label: "No — it's at parity",
-        description: "It's competitive, but not meaningfully differentiated",
-        value: "parity",
-      },
-    ],
-  },
-  {
-    id: "positioning",
-    question: "How does this fit within your core business?",
-    subtext:
-      "Products outside your core may need a name that stands on its own.",
-    condition: (answers) => answers.classification === "new",
-    options: [
-      {
-        label: "Core business",
-        description: "Squarely within what your company is known for",
-        value: "core",
-      },
-      {
-        label: "Stretch or new territory",
+        label: "Yes",
         description:
-          "Beyond your current capabilities or customer expectations",
-        value: "non_core",
-      },
-    ],
-  },
-  {
-    id: "resources",
-    question: "Do you have resources to build and support a new brand?",
-    subtext:
-      "A new brand name needs marketing investment to gain recognition. Be honest about budget.",
-    condition: (answers) => answers.classification === "new",
-    options: [
-      {
-        label: "Yes — we can invest in brand building",
-        description:
-          "We have budget for launch marketing, brand guidelines, and ongoing support",
-        value: "above",
-      },
-      {
-        label: "No — limited resources",
-        description:
-          "We need something that works without heavy marketing investment",
-        value: "below",
-      },
-    ],
-  },
-  {
-    id: "parent_brand",
-    question: "Is there a parent brand this needs to connect to?",
-    subtext:
-      "This affects whether the name stands alone or lives under an existing brand umbrella.",
-    condition: (answers) => answers.classification === "new",
-    options: [
-      {
-        label: "Yes — it should connect to our parent brand",
-        description:
-          "The new product should clearly be part of a larger brand family",
+          "We have or can allocate budget for brand development",
         value: "yes",
       },
       {
-        label: "No — it can stand alone",
+        label: "No",
         description:
-          "The product can have its own identity, separate from the parent",
+          "Resources are limited or allocated elsewhere",
         value: "no",
       },
     ],
   },
-];
-
-export interface BrainstormQuestion {
-  id: string;
-  question: string;
-  subtext: string;
-  type: "textarea" | "text" | "chips" | "select";
-  placeholder?: string;
-  optional?: boolean;
-  options?: string[] | { label: string; value: string }[];
-  maxSelect?: number;
-}
-
-export const brainstormQuestions: BrainstormQuestion[] = [
   {
-    id: "product_description",
-    question: "What does this product or service actually do?",
-    subtext:
-      "In plain language. Pretend you're explaining it to someone at a dinner party.",
-    type: "textarea",
-    placeholder:
-      "e.g., It's a software platform that helps small businesses manage their inventory across multiple sales channels...",
-  },
-  {
-    id: "target_audience",
-    question: "Who is it for?",
-    subtext:
-      "Be as specific as you can about the people who will buy or use this.",
-    type: "textarea",
-    placeholder:
-      "e.g., Small business owners with 5-50 employees who sell both online and in physical stores...",
-  },
-  {
-    id: "differentiator",
-    question: "What makes it different from competitors?",
-    subtext:
-      "If you said 'parity' earlier, focus on what's different about YOUR version, even if it's subtle.",
-    type: "textarea",
-    placeholder:
-      "e.g., It's the only platform that syncs inventory in real-time across all channels without manual input...",
-  },
-  {
-    id: "category",
-    question: "What category does it sit in?",
-    subtext: "What would someone Google to find a product like this?",
-    type: "text",
-    placeholder:
-      "e.g., Inventory management software, Athletic footwear, Plant-based protein bars...",
-  },
-  {
-    id: "parent_brand_name",
-    question: "What's the parent brand name (if applicable)?",
-    subtext: "Leave blank if there isn't one or if the name will stand alone.",
-    type: "text",
-    placeholder: "e.g., Acme Corp",
-    optional: true,
-  },
-  {
-    id: "tone",
-    question: "What personality should the name convey?",
-    subtext: "Pick up to 3 that feel right.",
-    type: "chips",
+    id: "hold_period",
+    question: "What's the anticipated hold period?",
+    subtext: "Longer holds justify more investment in the holdco brand.",
     options: [
-      "Professional",
-      "Approachable",
-      "Technical",
-      "Playful",
-      "Premium",
-      "Bold",
-      "Trustworthy",
-      "Innovative",
-      "Warm",
-      "Minimalist",
-      "Energetic",
-      "Sophisticated",
+      {
+        label: "Less than 3 years",
+        description:
+          "Near-term exit — the holdco brand is primarily functional",
+        value: "short",
+      },
+      {
+        label: "3–7 years",
+        description:
+          "Standard hold — the brand will need to work for a meaningful period",
+        value: "standard",
+      },
+      {
+        label: "7+ years or permanent capital",
+        description:
+          "Long-term or permanent — the holdco brand is a lasting asset",
+        value: "long",
+      },
     ],
-    maxSelect: 3,
   },
   {
-    id: "explore_themes",
-    question: "Any words, themes, or directions to explore?",
+    id: "existing_equity",
+    question:
+      "Does the holdco name currently carry meaningful brand recognition?",
     subtext:
-      "Concepts, metaphors, root words — anything that feels like the right territory.",
-    type: "textarea",
-    placeholder:
-      "e.g., Speed, clarity, connection, simplicity. Or: Latin roots, weather metaphors, short punchy words...",
-    optional: true,
-  },
-  {
-    id: "avoid_themes",
-    question: "Anything to avoid?",
-    subtext: "Words, sounds, themes, or associations that are off-limits.",
-    type: "textarea",
-    placeholder:
-      "e.g., Don't want anything techy-sounding. Avoid words that are hard to spell or pronounce...",
-    optional: true,
-  },
-  {
-    id: "international",
-    question: "Does the name need to work internationally?",
-    subtext: "This affects what kinds of names are viable.",
-    type: "select",
+      "Consider recognition among LPs, customers, talent, and industry stakeholders.",
     options: [
-      { label: "English-speaking markets only", value: "english" },
-      { label: "Global — needs to work across languages", value: "global" },
-      { label: "Specific regions", value: "specific" },
+      {
+        label: "Yes — significant recognition",
+        description:
+          "Key stakeholders know and associate value with the name",
+        value: "significant",
+      },
+      {
+        label: "Some recognition",
+        description:
+          "Moderate awareness, but it's not a strong brand",
+        value: "some",
+      },
+      {
+        label: "Minimal or none",
+        description: "The name has little to no brand equity",
+        value: "minimal",
+      },
     ],
   },
 ];
-
-// Descriptive path: skip tone, explore_themes, avoid_themes (questions 6-8)
-const descriptiveSkipIds = new Set(["tone", "explore_themes", "avoid_themes"]);
-
-export const descriptiveBrainstormQuestions = brainstormQuestions.filter(
-  (q) => !descriptiveSkipIds.has(q.id)
-);
