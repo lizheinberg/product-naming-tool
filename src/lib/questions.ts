@@ -99,28 +99,6 @@ export const decisionTreeQuestions: Question[] = [
     ],
   },
   {
-    id: "brand_equity",
-    question:
-      "Does the holdco name currently carry meaningful brand recognition?",
-    subtext:
-      "Consider recognition among LPs, customers, talent, and industry stakeholders.",
-    condition: (answers) =>
-      isCustomerFacing(answers) && needsNewName(answers),
-    options: [
-      {
-        label: "Yes — significant equity",
-        description:
-          "Key stakeholders know and associate value with the name",
-        value: "significant",
-      },
-      {
-        label: "Minimal or none",
-        description: "The name has little to no brand equity",
-        value: "minimal",
-      },
-    ],
-  },
-  {
     id: "hold_period",
     question: "What's the anticipated hold period?",
     subtext: "Longer holds justify more investment in the holdco brand.",
@@ -160,6 +138,28 @@ export const decisionTreeQuestions: Question[] = [
         description:
           "Resources are limited or allocated elsewhere",
         value: "no",
+      },
+    ],
+  },
+  {
+    id: "brand_equity",
+    question:
+      "Do any of the portfolio brands have significant equity?",
+    subtext:
+      "Consider brand recognition, customer loyalty, and market positioning of the individual portfolio companies.",
+    condition: (answers) => isCustomerFacing(answers),
+    options: [
+      {
+        label: "Yes — significant equity",
+        description:
+          "One or more portfolio brands have strong recognition and value worth preserving",
+        value: "significant",
+      },
+      {
+        label: "Minimal or none",
+        description:
+          "Portfolio brands have little existing brand equity",
+        value: "minimal",
       },
     ],
   },

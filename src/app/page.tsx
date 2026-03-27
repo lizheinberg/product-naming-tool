@@ -443,7 +443,7 @@ function ResultsScreen({
         {outcome.nameDescription}
       </p>
 
-      {/* Architecture Type */}
+      {/* Architecture Recommendation */}
       <div style={{ marginBottom: 16 }}>
         <p
           style={{
@@ -455,7 +455,7 @@ function ResultsScreen({
             fontWeight: 600,
           }}
         >
-          Brand Architecture
+          Architecture Recommendation
         </p>
         <div
           style={{
@@ -473,7 +473,7 @@ function ResultsScreen({
               color: "var(--text)",
             }}
           >
-            {outcome.architectureType}
+            {outcome.architectureRecommendation}
           </p>
           <p
             style={{

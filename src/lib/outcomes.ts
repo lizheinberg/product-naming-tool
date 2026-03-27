@@ -1,24 +1,13 @@
 export interface DecisionOutcome {
-  architectureType: string;
-  architectureDescription: string;
   nameRecommendation: string;
   nameDescription: string;
+  architectureRecommendation: string;
+  architectureDescription: string;
   investmentLevel: "high" | "moderate" | "low" | "minimal";
   investmentLabel: string;
   investmentDescription: string;
   considerations: string[];
 }
-
-const architectureDescriptions: Record<string, string> = {
-  masterbrand:
-    "One brand that replaces all portfolio brands. The holdco name becomes the single identity across the portfolio — every acquisition adopts it.",
-  endorsed:
-    'Each portfolio brand keeps its own identity, endorsed by the holdco — "a [HoldCo] company." The holdco brand adds trust without replacing individual brands.',
-  hybrid:
-    "A blend of Masterbrand and Endorsed, based on individual portfolio brand strength. The holdco leads where it fits and endorses where it doesn't.",
-  pure_holding:
-    "The holdco serves a corporate and legal function only. Portfolio companies operate as fully independent brands.",
-};
 
 const architectureLabels: Record<string, string> = {
   masterbrand: "Masterbrand",
@@ -34,28 +23,43 @@ export function getOutcome(
     architecture_model,
     name_alignment,
     trademark,
-    brand_equity,
     hold_period,
     budget,
+    brand_equity,
   } = answers;
 
   const isCustomerFacing = architecture_model !== "pure_holding";
-  const archType = architectureLabels[architecture_model] ?? architecture_model;
-  const archDescription =
-    architectureDescriptions[architecture_model] ?? "";
-
   const considerations: string[] = [];
+
+  // ── Architecture Recommendation (from brand equity) ──
+
+  let architectureRecommendation: string;
+  let architectureDescription: string;
+
+  if (!isCustomerFacing) {
+    architectureRecommendation = "Discrete";
+    architectureDescription =
+      "The holdco operates behind the scenes. Portfolio companies maintain fully independent brands with no visible connection to the holding company.";
+  } else if (brand_equity === "significant") {
+    architectureRecommendation = "Endorsed or Hybrid";
+    architectureDescription =
+      "Your portfolio includes brands with meaningful equity worth preserving. An endorsed model lets each brand keep its identity with holdco credibility backing, while a hybrid model lets you lead with the holdco where it makes sense and preserve strong portfolio brands where they're stronger.";
+  } else {
+    architectureRecommendation = "Masterbrand or Endorsed";
+    architectureDescription =
+      "With limited existing portfolio brand equity, there's an opportunity to build unified brand power. A masterbrand approach replaces all brands with one identity, maximizing brand efficiency. An endorsed model works well if you want to maintain some brand diversity while still unifying under the holdco.";
+  }
 
   // ── Pure Holding Company paths ──
 
   if (!isCustomerFacing) {
     if (name_alignment === "yes" && trademark === "cleared") {
       return {
-        architectureType: archType,
-        architectureDescription: archDescription,
         nameRecommendation: 'Retain "Legal" Name',
         nameDescription:
           "Your holdco name is aligned with the portfolio scope and has adequate trademark protection. It serves its intended corporate and legal function well — no change needed.",
+        architectureRecommendation,
+        architectureDescription,
         investmentLevel: "minimal",
         investmentLabel: "Minimal",
         investmentDescription:
@@ -64,7 +68,6 @@ export function getOutcome(
       };
     }
 
-    // Pure holding: name not aligned OR trademark not cleared → new legal name
     if (name_alignment === "no") {
       considerations.push(
         "The current name doesn't align with the portfolio scope. Since this is a pure holding company, the replacement only needs to serve a legal and corporate function."
@@ -77,11 +80,11 @@ export function getOutcome(
     }
 
     return {
-      architectureType: archType,
-      architectureDescription: archDescription,
       nameRecommendation: 'New "Legal" Name',
       nameDescription:
         "Your current holdco name either doesn't align with the portfolio scope or has trademark issues. Since this is a pure holding company, the new name only needs to serve a legal and corporate function — no brand-building required.",
+      architectureRecommendation,
+      architectureDescription,
       investmentLevel: "low",
       investmentLabel: "Low",
       investmentDescription:
@@ -95,17 +98,15 @@ export function getOutcome(
   // Name aligned + Trademark cleared → Retain
   if (name_alignment === "yes" && trademark === "cleared") {
     considerations.push(
-      "Your name and trademark position are strong. Focus investment on building the brand within the " +
-        archType.toLowerCase() +
-        " architecture you've chosen."
+      "Your name and trademark position are strong. Focus investment on building the brand within your chosen architecture."
     );
 
     return {
-      architectureType: archType,
-      architectureDescription: archDescription,
       nameRecommendation: "Retain Existing HoldCo Name",
       nameDescription:
         "Your holdco name is broad enough to cover the portfolio and has the trademark protection to back it up. Keep it, protect it, and invest in building the brand.",
+      architectureRecommendation,
+      architectureDescription,
       investmentLevel: "low",
       investmentLabel: "Low",
       investmentDescription:
@@ -115,20 +116,7 @@ export function getOutcome(
   }
 
   // From here: customer-facing + needs a new name
-  // (either name not aligned, or trademark not cleared)
 
-  // Add equity consideration
-  if (brand_equity === "significant") {
-    considerations.push(
-      "The current name carries meaningful brand equity. Walking away from it has real costs — factor the value of existing recognition into the transition plan."
-    );
-  } else if (brand_equity === "minimal") {
-    considerations.push(
-      "The current name carries little brand equity, which means the cost of changing is low. This is actually an advantage — you can move to a stronger name without losing much."
-    );
-  }
-
-  // Add context about why a new name is needed
   if (name_alignment === "no") {
     considerations.push(
       "The current name is too narrow or limiting for the portfolio scope. A new name gives you room to grow without constant brand tension."
@@ -139,7 +127,6 @@ export function getOutcome(
     );
   }
 
-  // Note about endorsed architecture and trademark criteria
   if (architecture_model === "endorsed") {
     considerations.push(
       "As an endorsed brand, the trademark criteria may differ from a masterbrand — but clearance is still essential. The endorsement needs to be legally protectable across the portfolio."
@@ -153,11 +140,11 @@ export function getOutcome(
     );
 
     return {
-      architectureType: archType,
-      architectureDescription: archDescription,
       nameRecommendation: "New Descriptive / Intuitive Name",
       nameDescription:
         "You need a new name, and the short hold period points toward a descriptive or intuitive approach — a name that communicates what the holdco does or represents without heavy brand-building investment.",
+      architectureRecommendation,
+      architectureDescription,
       investmentLevel: "moderate",
       investmentLabel: "Moderate",
       investmentDescription:
@@ -169,15 +156,15 @@ export function getOutcome(
   // 3+ years with budget → New Intuitive / Associative
   if (budget === "yes") {
     considerations.push(
-      "With a longer hold period and adequate resources, you can invest in a proprietary name that builds real brand equity over time. This is the path to a lasting platform brand."
+      "With a longer hold period and adequate resources, you can invest in a proprietary name that builds real brand equity over time."
     );
 
     return {
-      architectureType: archType,
-      architectureDescription: archDescription,
       nameRecommendation: "New Intuitive / Associative Name",
       nameDescription:
         "Your situation calls for a new name — one that evokes the right associations without being literally descriptive. With adequate resources and a longer hold period, you can invest in a proprietary name that compounds in value over time.",
+      architectureRecommendation,
+      architectureDescription,
       investmentLevel: "high",
       investmentLabel: "High",
       investmentDescription:
@@ -192,11 +179,11 @@ export function getOutcome(
   );
 
   return {
-    architectureType: archType,
-    architectureDescription: archDescription,
     nameRecommendation: "New Descriptive / Intuitive Name",
     nameDescription:
       "You need a new name, but budget constraints point toward a descriptive or intuitive approach. A name that clearly communicates the holdco's role — one that works without heavy brand-building investment but can still build recognition over a longer hold period.",
+    architectureRecommendation,
+    architectureDescription,
     investmentLevel: "moderate",
     investmentLabel: "Moderate",
     investmentDescription:
