@@ -223,7 +223,7 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
       >
         Answer a few questions about your roll-up&apos;s holding company, and
         we&apos;ll tell you whether the current name works — or if it&apos;s
-        time for a change. Takes about 2 minutes.
+        time for a change.
       </p>
       <PrimaryButton onClick={onStart}>Get started</PrimaryButton>
       <Footer full />
@@ -370,19 +370,6 @@ function ResultsScreen({
   outcome: DecisionOutcome;
   onRestart: () => void;
 }) {
-  const archColors: Record<
-    DecisionOutcome["architectureType"],
-    { color: string; bg: string }
-  > = {
-    monolithic: { color: "var(--accent)", bg: "var(--accent-light)" },
-    endorsed: { color: "var(--success)", bg: "var(--success-bg)" },
-    hybrid: { color: "var(--warning)", bg: "var(--warning-bg)" },
-    discrete: {
-      color: "var(--text-secondary)",
-      bg: "rgba(17, 36, 68, 0.06)",
-    },
-  };
-
   const investColors: Record<
     DecisionOutcome["investmentLevel"],
     { color: string; bg: string }
@@ -390,10 +377,15 @@ function ResultsScreen({
     high: { color: "var(--accent)", bg: "var(--accent-light)" },
     moderate: { color: "var(--warning)", bg: "var(--warning-bg)" },
     low: { color: "var(--text-secondary)", bg: "rgba(17, 36, 68, 0.06)" },
+    minimal: { color: "var(--text-secondary)", bg: "rgba(17, 36, 68, 0.06)" },
   };
 
-  const { color: archColor, bg: archBg } =
-    archColors[outcome.architectureType];
+  const nameColor = outcome.nameRecommendation.startsWith("Retain")
+    ? { color: "var(--success)", bg: "var(--success-bg)" }
+    : outcome.nameRecommendation.includes("Intuitive / Associative")
+      ? { color: "var(--accent)", bg: "var(--accent-light)" }
+      : { color: "var(--warning)", bg: "var(--warning-bg)" };
+
   const { color: investColor, bg: investBg } =
     investColors[outcome.investmentLevel];
 
@@ -409,15 +401,15 @@ function ResultsScreen({
           fontWeight: 600,
         }}
       >
-        Your Brand Architecture Path
+        Your Recommendation
       </p>
 
-      {/* Architecture type badge */}
+      {/* Name recommendation badge */}
       <div
         style={{
           display: "inline-block",
-          background: archBg,
-          color: archColor,
+          background: nameColor.bg,
+          color: nameColor.color,
           padding: "6px 16px",
           borderRadius: 100,
           fontSize: 13,
@@ -426,7 +418,7 @@ function ResultsScreen({
           marginBottom: 20,
         }}
       >
-        {outcome.architectureLabel} Architecture
+        {outcome.nameRecommendation}
       </div>
 
       <h1
@@ -438,7 +430,7 @@ function ResultsScreen({
           lineHeight: 1.2,
         }}
       >
-        {outcome.architectureLabel}
+        {outcome.nameRecommendation}
       </h1>
       <p
         style={{
@@ -448,10 +440,10 @@ function ResultsScreen({
           marginBottom: 36,
         }}
       >
-        {outcome.architectureDescription}
+        {outcome.nameDescription}
       </p>
 
-      {/* Name Type */}
+      {/* Architecture Type */}
       <div style={{ marginBottom: 16 }}>
         <p
           style={{
@@ -463,7 +455,7 @@ function ResultsScreen({
             fontWeight: 600,
           }}
         >
-          Name Type
+          Brand Architecture
         </p>
         <div
           style={{
@@ -481,7 +473,7 @@ function ResultsScreen({
               color: "var(--text)",
             }}
           >
-            {outcome.nameType}
+            {outcome.architectureType}
           </p>
           <p
             style={{
@@ -490,7 +482,7 @@ function ResultsScreen({
               lineHeight: 1.6,
             }}
           >
-            {outcome.nameDescription}
+            {outcome.architectureDescription}
           </p>
         </div>
       </div>
@@ -631,7 +623,7 @@ function ResultsScreen({
             marginBottom: 10,
           }}
         >
-          Need help executing this architecture?
+          Need help with naming or brand architecture?
         </h3>
         <p
           style={{
