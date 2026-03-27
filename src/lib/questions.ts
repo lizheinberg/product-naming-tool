@@ -13,7 +13,7 @@ export interface Question {
 }
 
 function isCustomerFacing(answers: Record<string, string>): boolean {
-  return answers.architecture_model !== "pure_holding";
+  return answers.architecture_model === "customer_facing";
 }
 
 function needsNewName(answers: Record<string, string>): boolean {
@@ -31,21 +31,10 @@ export const decisionTreeQuestions: Question[] = [
       "This determines the brand architecture model and how much the holdco name matters.",
     options: [
       {
-        label: "Masterbrand",
-        description: "One brand that replaces all portfolio brands",
-        value: "masterbrand",
-      },
-      {
-        label: "Endorsed",
+        label: "Customer-facing",
         description:
-          "Each portfolio brand keeps its brand; endorsed by common brand",
-        value: "endorsed",
-      },
-      {
-        label: "Hybrid",
-        description:
-          "Blend of Masterbrand and Endorsed based on individual portfolio brand's strength",
-        value: "hybrid",
+          "The holdco brand will be visible to customers — as a masterbrand, endorsed brand, or hybrid",
+        value: "customer_facing",
       },
       {
         label: "Pure Holding Company",

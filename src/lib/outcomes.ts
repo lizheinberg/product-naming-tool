@@ -9,13 +9,6 @@ export interface DecisionOutcome {
   considerations: string[];
 }
 
-const architectureLabels: Record<string, string> = {
-  masterbrand: "Masterbrand",
-  endorsed: "Endorsed",
-  hybrid: "Hybrid",
-  pure_holding: "Pure Holding Company",
-};
-
 export function getOutcome(
   answers: Record<string, string>
 ): DecisionOutcome {
@@ -28,7 +21,7 @@ export function getOutcome(
     brand_equity,
   } = answers;
 
-  const isCustomerFacing = architecture_model !== "pure_holding";
+  const isCustomerFacing = architecture_model === "customer_facing";
   const considerations: string[] = [];
 
   // ── Architecture Recommendation (from brand equity) ──
@@ -124,12 +117,6 @@ export function getOutcome(
   } else if (trademark === "no_partial") {
     considerations.push(
       "The name aligns with the portfolio, but trademark gaps create risk that grows with every acquisition. A new name with comprehensive clearance is the safer path."
-    );
-  }
-
-  if (architecture_model === "endorsed") {
-    considerations.push(
-      "As an endorsed brand, the trademark criteria may differ from a masterbrand — but clearance is still essential. The endorsement needs to be legally protectable across the portfolio."
     );
   }
 
