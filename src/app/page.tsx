@@ -404,14 +404,6 @@ function ResultsScreen({
   outcome: DecisionOutcome;
   onRestart: () => void;
 }) {
-  const nameColor =
-    outcome.nameRecommendation.startsWith("Retain") ||
-    outcome.nameRecommendation.startsWith("Leverage")
-      ? { color: "var(--success)", bg: "var(--success-bg)" }
-      : outcome.nameRecommendation.includes("Intuitive / Associative")
-        ? { color: "var(--accent)", bg: "var(--accent-light)" }
-        : { color: "var(--warning)", bg: "var(--warning-bg)" };
-
   return (
     <div className="animate-fade-in">
       <p
@@ -426,23 +418,6 @@ function ResultsScreen({
       >
         Your Recommendation
       </p>
-
-      {/* Name recommendation badge */}
-      <div
-        style={{
-          display: "inline-block",
-          background: nameColor.bg,
-          color: nameColor.color,
-          padding: "6px 16px",
-          borderRadius: 100,
-          fontSize: 13,
-          fontWeight: 600,
-          letterSpacing: "0.04em",
-          marginBottom: 20,
-        }}
-      >
-        {outcome.nameRecommendation}
-      </div>
 
       <h1
         style={{
