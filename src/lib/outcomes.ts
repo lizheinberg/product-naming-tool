@@ -88,16 +88,24 @@ export function getOutcome(
 
   // ── Customer-facing paths (Masterbrand, Endorsed, Hybrid) ──
 
-  // Name aligned + Trademark cleared → Retain
+  // Name aligned + Trademark cleared → Retain (or Leverage if significant equity)
   if (name_alignment === "yes" && trademark === "cleared") {
     considerations.push(
       "Your name and trademark position are strong. Focus investment on building the brand within your chosen architecture."
     );
 
+    const nameRec =
+      brand_equity === "significant"
+        ? "Leverage one of the acquired brands for the HoldCo Name"
+        : "Retain Existing HoldCo Name";
+    const nameDesc =
+      brand_equity === "significant"
+        ? "One of the acquired portfolio company names is broad enough to cover the portfolio and has the trademark protection to back it up. Keep it, protect it, and invest in building the brand."
+        : "Your holdco name is broad enough to cover the portfolio and has the trademark protection to back it up. Keep it, protect it, and invest in building the brand.";
+
     return {
-      nameRecommendation: "Retain Existing HoldCo Name",
-      nameDescription:
-        "Your holdco name is broad enough to cover the portfolio and has the trademark protection to back it up. Keep it, protect it, and invest in building the brand.",
+      nameRecommendation: nameRec,
+      nameDescription: nameDesc,
       architectureRecommendation,
       architectureDescription,
       investmentLevel: "low",

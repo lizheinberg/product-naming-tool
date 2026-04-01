@@ -28,7 +28,7 @@ export const decisionTreeQuestions: Question[] = [
     id: "architecture_model",
     question: "What role will the holdco play?",
     subtext:
-      "This determines the brand architecture model and how much the holdco name matters.",
+      "This determines the brand architecture model - the relationship between the holding company, the acquired brands, and how these interact with each other and the customers - which then defines how much the holdco name matters.",
     options: [
       {
         label: "Customer-facing",
@@ -49,7 +49,7 @@ export const decisionTreeQuestions: Question[] = [
     question:
       "Could the name credibly cover the full range / is it too limiting?",
     subtext:
-      "Think about where the platform is headed, not just where it is today.",
+      "Think about where the platform is headed, not just where it is today - expanding the services and/or target customer base and supporting evolution and innovation in the sector.",
     options: [
       {
         label: "Yes — it's broad enough",
@@ -70,7 +70,7 @@ export const decisionTreeQuestions: Question[] = [
     question:
       "Has the holdco name cleared the requisite trademark G&S and International Classes?",
     subtext:
-      "Trademark coverage needs to span the full scope of the portfolio — not just the original business.",
+      "Fewer than 10% of U.S. companies have federally registered trademarks for their company name. For smaller, regional businesses this often poses little risk. However, as companies expand geographically or broaden their services, trademark exposure increases significantly.\n\nFor national and international brands, trademark strategy becomes critical. Consumer-facing brands must both avoid infringing on existing marks and secure protection against future competitors.\n\nBrand architecture decisions also carry different trademark implications and should be evaluated early in the strategy and planning process.",
     condition: (answers) => answers.name_alignment === "yes",
     options: [
       {
@@ -90,7 +90,7 @@ export const decisionTreeQuestions: Question[] = [
   {
     id: "hold_period",
     question: "What's the anticipated hold period?",
-    subtext: "Longer holds justify more investment in the holdco brand.",
+    subtext: "Longer holds justify more investment in the holdco brand, as the brand has an opportunity to add value.",
     condition: (answers) =>
       isCustomerFacing(answers) && needsNewName(answers),
     options: [
@@ -103,7 +103,7 @@ export const decisionTreeQuestions: Question[] = [
       {
         label: "3 years or less",
         description:
-          "Near-term exit — the holdco brand is primarily functional",
+          "Near-term exit \u2014 the holdco brand is primarily functional; we don\u2019t need it to add value",
         value: "3_or_less",
       },
     ],
@@ -113,7 +113,7 @@ export const decisionTreeQuestions: Question[] = [
     question:
       "Will there be adequate resources to develop and support the brand?",
     subtext:
-      "Brand building requires sustained investment — consider design, marketing, legal, and rollout costs.",
+      "Brand building requires initial and sustained investment \u2014 consider design, marketing, legal, and rollout costs.",
     condition: (answers) => answers.hold_period === "3plus",
     options: [
       {

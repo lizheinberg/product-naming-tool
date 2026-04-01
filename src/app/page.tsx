@@ -207,24 +207,53 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
           fontSize: 44,
           fontWeight: 400,
           lineHeight: 1.15,
-          marginBottom: 20,
+          marginBottom: 24,
           letterSpacing: "-0.01em",
         }}
       >
-        Does your holdco need a new name?
+        We&apos;d appreciate your input.
       </h1>
-      <p
+      <div
         style={{
-          fontSize: 17,
+          fontSize: 16,
           lineHeight: 1.7,
           color: "var(--text-secondary)",
-          marginBottom: 44,
+          marginBottom: 40,
+          display: "flex",
+          flexDirection: "column",
+          gap: 16,
         }}
       >
-        Answer a few questions about your roll-up&apos;s holding company, and
-        we&apos;ll tell you whether the current name works — or if it&apos;s
-        time for a change.
-      </p>
+        <p>
+          If you&apos;ve received a link to this tool, it&apos;s because
+          someone values your expertise in the realm of portfolio companies and
+          brand building.
+        </p>
+        <p>
+          This is a beta version of a decision tool created by the strategic
+          naming agency{" "}
+          <a
+            href="https://www.prequel.agency/"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: "var(--accent)", textDecoration: "none", fontWeight: 500 }}
+          >
+            Prequel
+          </a>
+          .
+        </p>
+        <p>
+          In just a few minutes, we&apos;ll take you from &ldquo;do I need a
+          new name for this holdco&rdquo; to &ldquo;I have next steps and I
+          understand the rationale for this recommendation&rdquo; &mdash; or at
+          least, that&apos;s our goal!
+        </p>
+        <p>
+          We are currently seeking feedback to help us make this tool more
+          useful for people like you. (Just follow the link at the end.)
+        </p>
+        <p>Thank you for your time and input!</p>
+      </div>
       <PrimaryButton onClick={onStart}>Get started</PrimaryButton>
       <Footer full />
     </div>
@@ -289,16 +318,21 @@ function QuizScreen({
         >
           {currentQ.question}
         </h2>
-        <p
+        <div
           style={{
             fontSize: 15,
             color: "var(--text-secondary)",
             marginBottom: 32,
-            lineHeight: 1.5,
+            lineHeight: 1.6,
+            display: "flex",
+            flexDirection: "column",
+            gap: 12,
           }}
         >
-          {currentQ.subtext}
-        </p>
+          {currentQ.subtext.split("\n\n").map((para, i) => (
+            <p key={i}>{para}</p>
+          ))}
+        </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           {currentQ.options.map((opt) => (
@@ -370,24 +404,13 @@ function ResultsScreen({
   outcome: DecisionOutcome;
   onRestart: () => void;
 }) {
-  const investColors: Record<
-    DecisionOutcome["investmentLevel"],
-    { color: string; bg: string }
-  > = {
-    high: { color: "var(--accent)", bg: "var(--accent-light)" },
-    moderate: { color: "var(--warning)", bg: "var(--warning-bg)" },
-    low: { color: "var(--text-secondary)", bg: "rgba(17, 36, 68, 0.06)" },
-    minimal: { color: "var(--text-secondary)", bg: "rgba(17, 36, 68, 0.06)" },
-  };
-
-  const nameColor = outcome.nameRecommendation.startsWith("Retain")
-    ? { color: "var(--success)", bg: "var(--success-bg)" }
-    : outcome.nameRecommendation.includes("Intuitive / Associative")
-      ? { color: "var(--accent)", bg: "var(--accent-light)" }
-      : { color: "var(--warning)", bg: "var(--warning-bg)" };
-
-  const { color: investColor, bg: investBg } =
-    investColors[outcome.investmentLevel];
+  const nameColor =
+    outcome.nameRecommendation.startsWith("Retain") ||
+    outcome.nameRecommendation.startsWith("Leverage")
+      ? { color: "var(--success)", bg: "var(--success-bg)" }
+      : outcome.nameRecommendation.includes("Intuitive / Associative")
+        ? { color: "var(--accent)", bg: "var(--accent-light)" }
+        : { color: "var(--warning)", bg: "var(--warning-bg)" };
 
   return (
     <div className="animate-fade-in">
@@ -487,7 +510,55 @@ function ResultsScreen({
         </div>
       </div>
 
-      {/* Investment Level */}
+      {/* Key Considerations */}
+      {outcome.considerations.length > 0 && (
+        <div style={{ marginBottom: 16 }}>
+          <p
+            style={{
+              fontSize: 11,
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
+              color: "var(--text-secondary)",
+              marginBottom: 12,
+              fontWeight: 600,
+            }}
+          >
+            Key Considerations
+          </p>
+          <div
+            style={{
+              background: "var(--card)",
+              border: "1px solid var(--border)",
+              borderRadius: 10,
+              padding: 24,
+            }}
+          >
+            <ul
+              style={{
+                paddingLeft: 20,
+                display: "flex",
+                flexDirection: "column",
+                gap: 10,
+              }}
+            >
+              {outcome.considerations.map((item, i) => (
+                <li
+                  key={i}
+                  style={{
+                    fontSize: 15,
+                    lineHeight: 1.6,
+                    color: "var(--text)",
+                  }}
+                >
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+
+      {/* Next Steps */}
       <div style={{ marginBottom: 24 }}>
         <p
           style={{
@@ -499,7 +570,7 @@ function ResultsScreen({
             fontWeight: 600,
           }}
         >
-          Level of Investment
+          Next Steps
         </p>
         <div
           style={{
@@ -507,28 +578,8 @@ function ResultsScreen({
             border: "1px solid var(--border)",
             borderRadius: 10,
             padding: "20px 24px",
-            display: "flex",
-            gap: 14,
-            alignItems: "flex-start",
           }}
         >
-          <div
-            style={{
-              display: "inline-block",
-              background: investBg,
-              color: investColor,
-              padding: "4px 12px",
-              borderRadius: 100,
-              fontSize: 12,
-              fontWeight: 600,
-              letterSpacing: "0.04em",
-              flexShrink: 0,
-              marginTop: 2,
-              whiteSpace: "nowrap",
-            }}
-          >
-            {outcome.investmentLabel}
-          </div>
           <p
             style={{
               fontSize: 15,
@@ -540,53 +591,6 @@ function ResultsScreen({
           </p>
         </div>
       </div>
-
-      {/* Key Considerations */}
-      {outcome.considerations.length > 0 && (
-        <div
-          style={{
-            background: "var(--card)",
-            border: "1px solid var(--border)",
-            borderRadius: 10,
-            padding: 24,
-            marginBottom: 24,
-          }}
-        >
-          <p
-            style={{
-              fontSize: 11,
-              textTransform: "uppercase",
-              letterSpacing: "0.1em",
-              color: "var(--text-secondary)",
-              marginBottom: 14,
-              fontWeight: 600,
-            }}
-          >
-            Key Considerations
-          </p>
-          <ul
-            style={{
-              paddingLeft: 20,
-              display: "flex",
-              flexDirection: "column",
-              gap: 10,
-            }}
-          >
-            {outcome.considerations.map((item, i) => (
-              <li
-                key={i}
-                style={{
-                  fontSize: 15,
-                  lineHeight: 1.6,
-                  color: "var(--text)",
-                }}
-              >
-                {item}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
 
       {/* CTA to Prequel */}
       <div
@@ -623,7 +627,7 @@ function ResultsScreen({
             marginBottom: 10,
           }}
         >
-          Need help with naming or brand architecture?
+          Have suggestions to help us improve this tool?
         </h3>
         <p
           style={{
@@ -634,10 +638,8 @@ function ResultsScreen({
             margin: "0 auto",
           }}
         >
-          Prequel specializes in strategic naming and brand architecture for
-          portfolio companies.{" "}
           <a
-            href="https://www.prequel.agency"
+            href="https://www.prequel.agency/#contact"
             target="_blank"
             rel="noopener noreferrer"
             style={{
