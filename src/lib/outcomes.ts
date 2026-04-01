@@ -9,6 +9,9 @@ export interface DecisionOutcome {
   considerations: string[];
 }
 
+const PLEASE_NOTE =
+  "Please note: Internal communication and portfolio company receptivity is important; sometimes even if all signs point to leveraging one of the portfolio brands, internal politics can make a new name and a fresh start a compelling option.";
+
 export function getOutcome(
   answers: Record<string, string>
 ): DecisionOutcome {
@@ -26,7 +29,7 @@ export function getOutcome(
   const isBrandActive = isCustomerFacing || isIndustryFacing;
   const considerations: string[] = [];
 
-  // ── Architecture Recommendation (from role + brand equity) ──
+  // ── Architecture (from role + brand equity) ──
 
   let architectureRecommendation: string;
   let architectureDescription: string;
@@ -37,14 +40,13 @@ export function getOutcome(
     architectureDescription =
       "The holdco operates behind the scenes. Portfolio companies maintain fully independent brands with no visible connection to the holding company.";
   } else if (isIndustryFacing) {
+    architectureRecommendation = "Discrete / Hybrid";
     if (brand_equity === "significant") {
-      architectureRecommendation = "Industry Endorsement";
       architectureDescription =
-        "The holdco brand operates as an industry-facing endorser — visible to PE firms, talent, and potential acquisitions — while portfolio companies maintain independent customer-facing identities. Strong portfolio brands retain their own market positioning and customer relationships.";
+        "The holdco brand operates as an industry-facing endorser \u2014 visible to PE firms, talent, and potential acquisitions \u2014 while portfolio companies maintain independent customer-facing identities. Strong portfolio brands retain their own market positioning and customer relationships.";
     } else {
-      architectureRecommendation = "Unified Industry Brand";
       architectureDescription =
-        "With limited portfolio brand equity, the holdco can serve as a unifying industry-facing identity — for PE relationships, employee engagement, and company culture. Portfolio companies maintain separate customer-facing identities as needed.";
+        "With limited portfolio brand equity, the holdco can serve as a unifying industry-facing identity \u2014 for PE relationships, employee engagement, and company culture. Portfolio companies maintain separate customer-facing identities as needed.";
     }
   } else {
     // Customer-facing
@@ -62,6 +64,7 @@ export function getOutcome(
   // ── Pure Holding Company paths ──
 
   if (!isBrandActive) {
+    // Name aligned + Trademark cleared → Retain
     if (name_alignment === "yes" && trademark === "cleared") {
       return {
         nameRecommendation: 'Retain "Legal" Name',
@@ -77,21 +80,55 @@ export function getOutcome(
       };
     }
 
-    if (name_alignment === "no") {
+    // Name aligned + Trademark NOT cleared
+    if (name_alignment === "yes" && trademark === "no_partial") {
+      considerations.push(
+        "The name aligns with the portfolio, but trademark gaps create legal exposure. A new name with clear trademark coverage is the simplest path forward for a holding company."
+      );
+
+      return {
+        nameRecommendation: 'New "Legal" Name',
+        nameDescription:
+          "Your holdco name aligns with the portfolio scope but has trademark issues. Since this is a pure holding company, the new name only needs to serve a legal and corporate function \u2014 no brand-building required.",
+        architectureRecommendation,
+        architectureDescription,
+        investmentLevel: "low",
+        investmentLabel: "Low",
+        investmentDescription:
+          "New name development focused on legal and corporate requirements. Trademark clearance and basic documentation \u2014 no brand identity system needed.",
+        considerations,
+      };
+    }
+
+    // Name NOT aligned + Trademark cleared
+    if (name_alignment === "no" && trademark === "cleared") {
       considerations.push(
         "The current name doesn\u2019t align with the portfolio scope. Since this is a pure holding company, the replacement only needs to serve a legal and corporate function."
       );
+
+      return {
+        nameRecommendation: 'New "Legal" Name',
+        nameDescription:
+          "Your holdco name doesn\u2019t align with the portfolio scope. Since this is a pure holding company, the new name only needs to serve a legal and corporate function \u2014 no brand-building required.",
+        architectureRecommendation,
+        architectureDescription,
+        investmentLevel: "low",
+        investmentLabel: "Low",
+        investmentDescription:
+          "New name development focused on legal and corporate requirements. Trademark clearance and basic documentation \u2014 no brand identity system needed.",
+        considerations,
+      };
     }
-    if (name_alignment === "yes" && trademark === "no_partial") {
-      considerations.push(
-        "The name aligns with the portfolio, but trademark gaps create legal exposure. A new name with clear trademark coverage is the simpler path forward for a holding company."
-      );
-    }
+
+    // Name NOT aligned + Trademark NOT cleared
+    considerations.push(
+      "The current name doesn\u2019t align with the portfolio scope and has trademark gaps. Since this is a pure holding company, the replacement only needs to serve a legal and corporate function."
+    );
 
     return {
       nameRecommendation: 'New "Legal" Name',
       nameDescription:
-        "Your current holdco name either doesn\u2019t align with the portfolio scope or has trademark issues. Since this is a pure holding company, the new name only needs to serve a legal and corporate function \u2014 no brand-building required.",
+        "Your holdco name doesn\u2019t align with the portfolio scope and has trademark issues. Since this is a pure holding company, the new name only needs to serve a legal and corporate function \u2014 no brand-building required.",
       architectureRecommendation,
       architectureDescription,
       investmentLevel: "low",
@@ -114,12 +151,23 @@ export function getOutcome(
 
     const nameRec =
       brand_equity === "significant"
-        ? "Leverage one of the acquired brands for the HoldCo Name"
+        ? "Leverage One of the Acquired Brands for the HoldCo Name"
         : "Retain Existing HoldCo Name";
     const nameDesc =
       brand_equity === "significant"
         ? "One of the acquired portfolio company names is broad enough to cover the portfolio and has the trademark protection to back it up. Keep it, protect it, and invest in building the brand."
         : "Your holdco name is broad enough to cover the portfolio and has the trademark protection to back it up. Keep it, protect it, and invest in building the brand.";
+
+    let nextSteps: string;
+    if (isIndustryFacing) {
+      nextSteps =
+        brand_equity === "significant"
+          ? "Maintain trademark registrations in relevant industry classes. Invest in industry-facing brand presence \u2014 investor materials, talent brand, and portfolio company communications \u2014 but no consumer brand investment needed.\n\n" + PLEASE_NOTE
+          : "Maintain trademark registrations in relevant industry classes. Invest in industry-facing brand presence \u2014 investor materials, talent brand, and portfolio company communications \u2014 but no consumer brand identity system needed.\n\n" + PLEASE_NOTE;
+    } else {
+      nextSteps =
+        "Maintain and expand trademark registrations as the portfolio grows. Invest in brand guidelines and consistent application across the portfolio \u2014 but no naming work needed.\n\n" + PLEASE_NOTE;
+    }
 
     return {
       nameRecommendation: nameRec,
@@ -128,9 +176,7 @@ export function getOutcome(
       architectureDescription,
       investmentLevel: "low",
       investmentLabel: "Low",
-      investmentDescription: isIndustryFacing
-        ? "Maintain trademark registrations in relevant industry classes. Invest in industry-facing brand presence \u2014 investor materials, talent brand, and portfolio company communications \u2014 but no consumer brand identity system needed."
-        : "Maintain and expand trademark registrations as the portfolio grows. Invest in brand guidelines and consistent application across the portfolio \u2014 but no naming work needed.",
+      investmentDescription: nextSteps,
       considerations,
     };
   }

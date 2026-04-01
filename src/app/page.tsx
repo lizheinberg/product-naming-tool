@@ -244,13 +244,14 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
         </p>
         <p>
           In just a few minutes, we&apos;ll take you from &ldquo;do I need a
-          new name for this holdco&rdquo; to &ldquo;I have next steps and I
-          understand the rationale for this recommendation&rdquo; &mdash; or at
-          least, that&apos;s our goal!
+          new name for this holdco&rdquo; to &ldquo;I understand the factors I
+          should be considering and the next steps I should take&rdquo; &mdash;
+          or at least, that&apos;s our goal!
         </p>
         <p>
           We are currently seeking feedback to help us make this tool more
-          useful for people like you. (Just follow the link at the end.)
+          useful for professionals in your field. (Just follow the link at
+          the end.)
         </p>
         <p>Thank you for your time and input!</p>
       </div>
@@ -453,7 +454,7 @@ function ResultsScreen({
             fontWeight: 600,
           }}
         >
-          Architecture Recommendation
+          Architecture
         </p>
         <div
           style={{
@@ -553,17 +554,23 @@ function ResultsScreen({
             border: "1px solid var(--border)",
             borderRadius: 10,
             padding: "20px 24px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 12,
           }}
         >
-          <p
-            style={{
-              fontSize: 15,
-              color: "var(--text-secondary)",
-              lineHeight: 1.6,
-            }}
-          >
-            {outcome.investmentDescription}
-          </p>
+          {outcome.investmentDescription.split("\n\n").map((para, i) => (
+            <p
+              key={i}
+              style={{
+                fontSize: 15,
+                color: "var(--text-secondary)",
+                lineHeight: 1.6,
+              }}
+            >
+              {para}
+            </p>
+          ))}
         </div>
       </div>
 

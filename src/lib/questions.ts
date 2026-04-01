@@ -42,7 +42,7 @@ export const decisionTreeQuestions: Question[] = [
       {
         label: "Industry-facing",
         description:
-          "Visible within the industry — for attracting portfolio companies, PE relationships, talent, and company culture — but not to end customers",
+          "Visible within the industry — for attracting portfolio companies, PE relationships, talent, and company culture — but not relevant to end customers",
         value: "industry_facing",
       },
       {
