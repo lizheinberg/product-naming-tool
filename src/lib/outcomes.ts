@@ -10,7 +10,7 @@ export interface DecisionOutcome {
 }
 
 const PLEASE_NOTE =
-  "Please note: Internal communication and portfolio company receptivity is important; sometimes even if all signs point to leveraging one of the portfolio brands, internal politics can make a new name and a fresh start a compelling option.";
+  "Please note: Internal communication and portfolio company receptivity is important; sometimes even if all signs point to leveraging one of the portfolio brands for the holdco name, internal politics can make a new name and a fresh start a compelling option.";
 
 export function getOutcome(
   answers: Record<string, string>
@@ -152,7 +152,7 @@ export function getOutcome(
     const nameRec =
       brand_equity === "significant"
         ? "Leverage One of the Acquired Brands for the HoldCo Name"
-        : "Retain Existing HoldCo Name";
+        : "Retain Existing HoldCo Name or Leverage One of the Acquired Brands for the HoldCo Name";
     const nameDesc =
       brand_equity === "significant"
         ? "One of the acquired portfolio company names is broad enough to cover the portfolio and has the trademark protection to back it up. Keep it, protect it, and invest in building the brand."

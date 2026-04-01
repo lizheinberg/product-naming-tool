@@ -523,7 +523,7 @@ function ResultsScreen({
                   style={{
                     fontSize: 15,
                     lineHeight: 1.6,
-                    color: "var(--text)",
+                    color: "var(--text-secondary)",
                   }}
                 >
                   {item}
