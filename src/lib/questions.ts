@@ -19,14 +19,29 @@ function isBrandActive(answers: Record<string, string>): boolean {
   );
 }
 
+/** True when the effective TM status is "cleared" — either directly or via search */
+function tmIsCleared(answers: Record<string, string>): boolean {
+  return (
+    answers.trademark === "cleared" || answers.tm_search_result === "clear"
+  );
+}
+
+/** True when we know a new name is needed */
 function needsNewName(answers: Record<string, string>): boolean {
   if (answers.name_alignment === "no") return true;
-  if (answers.name_alignment === "yes" && answers.trademark === "no_partial")
+  if (answers.name_alignment === "yes" && answers.trademark === "known_conflict")
+    return true;
+  if (
+    answers.name_alignment === "yes" &&
+    answers.trademark === "unknown" &&
+    answers.tm_search_result === "conflict"
+  )
     return true;
   return false;
 }
 
 export const decisionTreeQuestions: Question[] = [
+  // ── Q1: Role ──────────────────────────────────────────────────
   {
     id: "architecture_model",
     question: "What role will the holdco play?",
@@ -53,27 +68,8 @@ export const decisionTreeQuestions: Question[] = [
       },
     ],
   },
-  {
-    id: "trademark",
-    question:
-      "Has the holdco name cleared the requisite trademark G&S and International Classes?",
-    subtext:
-      "Fewer than 10% of U.S. companies have federally registered trademarks for their company name. For smaller, regional businesses this often poses little risk. However, as companies expand geographically or broaden their services, trademark exposure increases significantly.\n\nFor national and international brands, trademark strategy becomes critical. Consumer-facing brands must both avoid infringing on existing marks and secure protection against future competitors.\n\nBrand architecture decisions also carry different trademark implications and should be evaluated early in the strategy and planning process.",
-    options: [
-      {
-        label: "Yes — fully cleared",
-        description:
-          "Fully cleared in the relevant USPTO trademark classes for the current and planned goods & services",
-        value: "cleared",
-      },
-      {
-        label: "No or Partial",
-        description:
-          "Clear in some regions and/or some goods and services, or not checked",
-        value: "no_partial",
-      },
-    ],
-  },
+
+  // ── Q2: Alignment (moved before Trademark) ───────────────────
   {
     id: "name_alignment",
     question:
@@ -95,6 +91,62 @@ export const decisionTreeQuestions: Question[] = [
       },
     ],
   },
+
+  // ── Q3: Trademark Status (only if a name is aligned) ─────────
+  {
+    id: "trademark",
+    question:
+      "Has the holdco name cleared the requisite trademark G&S and International Classes?",
+    subtext:
+      "Fewer than 10% of U.S. companies have federally registered trademarks for their company name. For smaller, regional businesses this often poses little risk. However, as companies expand geographically or broaden their services, trademark exposure increases significantly.\n\nFor national and international brands, trademark strategy becomes critical. Consumer-facing brands must both avoid infringing on existing marks and secure protection against future competitors.\n\nBrand architecture decisions also carry different trademark implications and should be evaluated early in the strategy and planning process.",
+    condition: (answers) => answers.name_alignment === "yes",
+    options: [
+      {
+        label: "Yes — fully cleared",
+        description:
+          "Fully cleared in the relevant USPTO trademark classes for the current and planned goods & services",
+        value: "cleared",
+      },
+      {
+        label: "No — known conflict",
+        description:
+          "A search has been conducted and there is a known conflict or issue in one or more relevant classes",
+        value: "known_conflict",
+      },
+      {
+        label: "Not checked",
+        description:
+          "A formal trademark search has not been conducted, or the status is unknown",
+        value: "unknown",
+      },
+    ],
+  },
+
+  // ── Q3.5: TM Search (informational — only if TM status is unknown) ──
+  {
+    id: "tm_search_result",
+    question: "Trademark Search",
+    subtext:
+      "Before moving forward with a name that hasn't been formally searched, it's important to understand the level of risk.\n\nA preliminary or \"knockout\" search can be conducted by your partner naming firm or trademark attorney. This is a relatively quick, low-cost screening that checks the USPTO database and common-law sources for obvious conflicts in the relevant goods & services classes.\n\nIf the name(s) clear that initial screening, your trademark attorney would then conduct a comprehensive (full) trademark search — a deeper analysis that includes state registrations, international marks, domain names, and common-law usage.\n\nWe recommend conducting at least a knockout search before proceeding. Once you have results, select the outcome below to continue.",
+    condition: (answers) =>
+      answers.name_alignment === "yes" && answers.trademark === "unknown",
+    options: [
+      {
+        label: "Clear",
+        description:
+          "The name cleared the trademark search — no significant conflicts found",
+        value: "clear",
+      },
+      {
+        label: "Known Conflict",
+        description:
+          "The search revealed a conflict or issue in one or more relevant classes",
+        value: "conflict",
+      },
+    ],
+  },
+
+  // ── Q4: Hold Period (only if a new name is needed + brand active) ──
   {
     id: "hold_period",
     question: "What's the anticipated hold period?",
@@ -112,17 +164,19 @@ export const decisionTreeQuestions: Question[] = [
       {
         label: "3 years or less",
         description:
-          "Near-term exit \u2014 the holdco brand is primarily functional; we don\u2019t need it to add value",
+          "Near-term exit — the holdco brand is primarily functional; we don't need it to add value",
         value: "3_or_less",
       },
     ],
   },
+
+  // ── Q5: Budget (only if hold period is 3+) ────────────────────
   {
     id: "budget",
     question:
       "Will there be adequate resources to develop and support the brand?",
     subtext:
-      "Brand building requires initial and sustained investment \u2014 consider design, marketing, legal, and rollout costs.",
+      "Brand building requires initial and sustained investment — consider design, marketing, legal, and rollout costs.",
     condition: (answers) => answers.hold_period === "3plus",
     options: [
       {
@@ -139,13 +193,18 @@ export const decisionTreeQuestions: Question[] = [
       },
     ],
   },
+
+  // ── Q6: Brand Equity (only on the "retain" path — aligned + TM clear) ──
   {
     id: "brand_equity",
     question:
       "Do any of the portfolio brands have significant equity?",
     subtext:
       "Consider brand recognition, customer loyalty, and market positioning of the individual portfolio companies.",
-    condition: (answers) => isBrandActive(answers),
+    condition: (answers) =>
+      isBrandActive(answers) &&
+      answers.name_alignment === "yes" &&
+      tmIsCleared(answers),
     options: [
       {
         label: "Yes — significant equity",

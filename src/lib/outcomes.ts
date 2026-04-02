@@ -12,6 +12,13 @@ export interface DecisionOutcome {
 const PLEASE_NOTE =
   "Please note: Internal communication and portfolio company receptivity is important; sometimes even if all signs point to leveraging one of the portfolio brands for the holdco name, internal politics can make a new name and a fresh start a compelling option.";
 
+/** True when the effective TM status is "cleared" — either directly or via search */
+function tmIsCleared(answers: Record<string, string>): boolean {
+  return (
+    answers.trademark === "cleared" || answers.tm_search_result === "clear"
+  );
+}
+
 export function getOutcome(
   answers: Record<string, string>
 ): DecisionOutcome {
@@ -29,7 +36,11 @@ export function getOutcome(
   const isBrandActive = isCustomerFacing || isIndustryFacing;
   const considerations: string[] = [];
 
+  const effectiveTmCleared = tmIsCleared(answers);
+
   // ── Architecture (from role + brand equity) ──
+  // On "new name" paths, brand_equity may not be set — default to treating
+  // it as unknown/not a factor for architecture framing.
 
   let architectureRecommendation: string;
   let architectureDescription: string;
@@ -43,33 +54,33 @@ export function getOutcome(
     architectureRecommendation = "Discrete / Hybrid";
     if (brand_equity === "significant") {
       architectureDescription =
-        "The holdco brand operates as an industry-facing endorser \u2014 visible to PE firms, talent, and potential acquisitions \u2014 while portfolio companies maintain independent customer-facing identities. Strong portfolio brands retain their own market positioning and customer relationships.";
+        "The holdco brand operates as an industry-facing endorser — visible to PE firms, talent, and potential acquisitions — while portfolio companies maintain independent customer-facing identities. Strong portfolio brands retain their own market positioning and customer relationships.";
     } else {
       architectureDescription =
-        "With limited portfolio brand equity, the holdco can serve as a unifying industry-facing identity \u2014 for PE relationships, employee engagement, and company culture. Portfolio companies maintain separate customer-facing identities as needed.";
+        "With limited portfolio brand equity, the holdco can serve as a unifying industry-facing identity — for PE relationships, employee engagement, and company culture. Portfolio companies maintain separate customer-facing identities as needed.";
     }
   } else {
     // Customer-facing
     if (brand_equity === "significant") {
       architectureRecommendation = "Endorsed or Hybrid";
       architectureDescription =
-        "Your portfolio includes brands with meaningful equity worth preserving. An endorsed model lets each brand keep its identity with holdco credibility backing, while a hybrid model lets you lead with the holdco where it makes sense and preserve strong portfolio brands where they\u2019re stronger.";
+        "Your portfolio includes brands with meaningful equity worth preserving. An endorsed model lets each brand keep its identity with holdco credibility backing, while a hybrid model lets you lead with the holdco where it makes sense and preserve strong portfolio brands where they're stronger.";
     } else {
       architectureRecommendation = "Masterbrand or Endorsed";
       architectureDescription =
-        "With limited existing portfolio brand equity, there\u2019s an opportunity to build unified brand power. A masterbrand approach replaces all brands with one identity, maximizing brand efficiency. An endorsed model works well if you want to maintain some brand diversity while still unifying under the holdco.";
+        "With limited existing portfolio brand equity, there's an opportunity to build unified brand power. A masterbrand approach replaces all brands with one identity, maximizing brand efficiency. An endorsed model works well if you want to maintain some brand diversity while still unifying under the holdco.";
     }
   }
 
   // ── Pure Holding Company paths ──
 
   if (!isBrandActive) {
-    // Name aligned + Trademark cleared → Retain
-    if (name_alignment === "yes" && trademark === "cleared") {
+    // Aligned + TM cleared → Retain
+    if (name_alignment === "yes" && effectiveTmCleared) {
       return {
         nameRecommendation: 'Retain "Legal" Name',
         nameDescription:
-          "Your holdco name is aligned with the portfolio scope and has adequate trademark protection. It serves its intended corporate and legal function well \u2014 no change needed.",
+          "Your holdco name is aligned with the portfolio scope and has adequate trademark protection. It serves its intended corporate and legal function well — no change needed.",
         architectureRecommendation,
         architectureDescription,
         investmentLevel: "minimal",
@@ -80,8 +91,8 @@ export function getOutcome(
       };
     }
 
-    // Name aligned + Trademark NOT cleared
-    if (name_alignment === "yes" && trademark === "no_partial") {
+    // Aligned + TM conflict → New legal name
+    if (name_alignment === "yes" && !effectiveTmCleared) {
       considerations.push(
         "The name aligns with the portfolio, but trademark gaps create legal exposure. A new name with clear trademark coverage is the simplest path forward for a holding company."
       );
@@ -89,60 +100,40 @@ export function getOutcome(
       return {
         nameRecommendation: 'New "Legal" Name',
         nameDescription:
-          "Your holdco name aligns with the portfolio scope but has trademark issues. Since this is a pure holding company, the new name only needs to serve a legal and corporate function \u2014 no brand-building required.",
+          "Your holdco name aligns with the portfolio scope but has trademark issues. Since this is a pure holding company, the new name only needs to serve a legal and corporate function — no brand-building required.",
         architectureRecommendation,
         architectureDescription,
         investmentLevel: "low",
         investmentLabel: "Low",
         investmentDescription:
-          "New name development focused on legal and corporate requirements. Trademark clearance and basic documentation \u2014 no brand identity system needed.",
+          "New name development focused on legal and corporate requirements. Trademark clearance and basic documentation — no brand identity system needed.",
         considerations,
       };
     }
 
-    // Name NOT aligned + Trademark cleared
-    if (name_alignment === "no" && trademark === "cleared") {
-      considerations.push(
-        "The current name doesn\u2019t align with the portfolio scope. Since this is a pure holding company, the replacement only needs to serve a legal and corporate function."
-      );
-
-      return {
-        nameRecommendation: 'New "Legal" Name',
-        nameDescription:
-          "Your holdco name doesn\u2019t align with the portfolio scope. Since this is a pure holding company, the new name only needs to serve a legal and corporate function \u2014 no brand-building required.",
-        architectureRecommendation,
-        architectureDescription,
-        investmentLevel: "low",
-        investmentLabel: "Low",
-        investmentDescription:
-          "New name development focused on legal and corporate requirements. Trademark clearance and basic documentation \u2014 no brand identity system needed.",
-        considerations,
-      };
-    }
-
-    // Name NOT aligned + Trademark NOT cleared
+    // Not aligned → New legal name (TM doesn't matter)
     considerations.push(
-      "The current name doesn\u2019t align with the portfolio scope and has trademark gaps. Since this is a pure holding company, the replacement only needs to serve a legal and corporate function."
+      "The current name doesn't align with the portfolio scope. Since this is a pure holding company, the replacement only needs to serve a legal and corporate function."
     );
 
     return {
       nameRecommendation: 'New "Legal" Name',
       nameDescription:
-        "Your holdco name doesn\u2019t align with the portfolio scope and has trademark issues. Since this is a pure holding company, the new name only needs to serve a legal and corporate function \u2014 no brand-building required.",
+        "Your holdco name doesn't align with the portfolio scope. Since this is a pure holding company, the new name only needs to serve a legal and corporate function — no brand-building required.",
       architectureRecommendation,
       architectureDescription,
       investmentLevel: "low",
       investmentLabel: "Low",
       investmentDescription:
-        "New name development focused on legal and corporate requirements. Trademark clearance and basic documentation \u2014 no brand identity system needed.",
+        "New name development focused on legal and corporate requirements. Trademark clearance and basic documentation — no brand identity system needed.",
       considerations,
     };
   }
 
   // ── Brand-active paths (Customer-facing and Industry-facing) ──
 
-  // Name aligned + Trademark cleared → Retain (or Leverage if significant equity)
-  if (name_alignment === "yes" && trademark === "cleared") {
+  // ── Retain path: Aligned + TM cleared ──
+  if (name_alignment === "yes" && effectiveTmCleared) {
     considerations.push(
       isIndustryFacing
         ? "Your name and trademark position are strong. Focus investment on building industry presence and internal culture around the holdco brand."
@@ -162,11 +153,11 @@ export function getOutcome(
     if (isIndustryFacing) {
       nextSteps =
         brand_equity === "significant"
-          ? "Maintain trademark registrations in relevant industry classes. Invest in industry-facing brand presence \u2014 investor materials, talent brand, and portfolio company communications \u2014 but no consumer brand investment needed.\n\n" + PLEASE_NOTE
-          : "Maintain trademark registrations in relevant industry classes. Invest in industry-facing brand presence \u2014 investor materials, talent brand, and portfolio company communications \u2014 but no consumer brand identity system needed.\n\n" + PLEASE_NOTE;
+          ? "Maintain trademark registrations in relevant industry classes. Invest in industry-facing brand presence — investor materials, talent brand, and portfolio company communications — but no consumer brand investment needed.\n\n" + PLEASE_NOTE
+          : "Maintain trademark registrations in relevant industry classes. Invest in industry-facing brand presence — investor materials, talent brand, and portfolio company communications — but no consumer brand identity system needed.\n\n" + PLEASE_NOTE;
     } else {
       nextSteps =
-        "Maintain and expand trademark registrations as the portfolio grows. Invest in brand guidelines and consistent application across the portfolio \u2014 but no naming work needed.\n\n" + PLEASE_NOTE;
+        "Maintain and expand trademark registrations as the portfolio grows. Invest in brand guidelines and consistent application across the portfolio — but no naming work needed.\n\n" + PLEASE_NOTE;
     }
 
     return {
@@ -181,30 +172,41 @@ export function getOutcome(
     };
   }
 
-  // From here: brand-active + needs a new name
+  // ── New name paths ──
 
   if (name_alignment === "no") {
     considerations.push(
       "The current name is too narrow or limiting for the portfolio scope. A new name gives you room to grow without constant brand tension."
     );
-  } else if (trademark === "no_partial") {
+  } else {
+    // Aligned but TM conflict
     considerations.push(
       isIndustryFacing
-        ? "The name aligns with the portfolio, but trademark gaps create risk \u2014 even with fewer required classes for an industry-facing brand, clearance is essential. A new name with comprehensive clearance is the safer path."
-        : "The name aligns with the portfolio, but trademark gaps create risk that grows with every acquisition. A new name with comprehensive clearance is the safer path."
+        ? "The name aligns with the portfolio, but trademark conflicts create risk — even with fewer required classes for an industry-facing brand, clearance is essential. A new name with comprehensive clearance is the safer path."
+        : "The name aligns with the portfolio, but trademark conflicts create risk that grows with every acquisition. A new name with comprehensive clearance is the safer path."
+    );
+  }
+
+  // If any portfolio brands have significant equity and the architecture
+  // is endorsed or discrete, trademark may still matter at the portco level —
+  // but if the portco stays in its current geography/G&S, existing coverage
+  // is likely sufficient. Add a consideration note for this scenario.
+  if (name_alignment === "no" && isBrandActive) {
+    considerations.push(
+      "If any of the portfolio brands have significant equity and you plan to use an endorsed or discrete architecture model, consider the trademark status of those individual brands — particularly if you plan to expand their geographic reach or goods & services scope. If a strong portco brand will continue operating in its current market, existing trademark coverage is likely sufficient."
     );
   }
 
   // Short hold: < 3 years → New Descriptive / Intuitive
   if (hold_period === "3_or_less") {
     considerations.push(
-      "With a short hold period, a descriptive or intuitive name is the pragmatic choice \u2014 it communicates clearly without requiring years of brand-building to gain recognition."
+      "With a short hold period, a descriptive or intuitive name is the pragmatic choice — it communicates clearly without requiring years of brand-building to gain recognition."
     );
 
     return {
       nameRecommendation: "New Descriptive / Intuitive Name",
       nameDescription:
-        "You need a new name, and the short hold period points toward a descriptive or intuitive approach \u2014 a name that communicates what the holdco does or represents without heavy brand-building investment.",
+        "You need a new name, and the short hold period points toward a descriptive or intuitive approach — a name that communicates what the holdco does or represents without heavy brand-building investment.",
       architectureRecommendation,
       architectureDescription,
       investmentLevel: "moderate",
@@ -227,8 +229,8 @@ export function getOutcome(
     return {
       nameRecommendation: "New Intuitive / Associative Name",
       nameDescription: isIndustryFacing
-        ? "Your situation calls for a new name \u2014 one that evokes the right associations without being literally descriptive. With adequate resources and a longer hold period, you can invest in a proprietary name that builds industry credibility and compounds in value over time."
-        : "Your situation calls for a new name \u2014 one that evokes the right associations without being literally descriptive. With adequate resources and a longer hold period, you can invest in a proprietary name that compounds in value over time.",
+        ? "Your situation calls for a new name — one that evokes the right associations without being literally descriptive. With adequate resources and a longer hold period, you can invest in a proprietary name that builds industry credibility and compounds in value over time."
+        : "Your situation calls for a new name — one that evokes the right associations without being literally descriptive. With adequate resources and a longer hold period, you can invest in a proprietary name that compounds in value over time.",
       architectureRecommendation,
       architectureDescription,
       investmentLevel: "high",
@@ -250,8 +252,8 @@ export function getOutcome(
   return {
     nameRecommendation: "New Descriptive / Intuitive Name",
     nameDescription: isIndustryFacing
-      ? "You need a new name, but budget constraints point toward a descriptive or intuitive approach. A name that clearly communicates the holdco\u2019s industry role \u2014 one that works without heavy brand-building investment but can still build recognition over a longer hold period."
-      : "You need a new name, but budget constraints point toward a descriptive or intuitive approach. A name that clearly communicates the holdco\u2019s role \u2014 one that works without heavy brand-building investment but can still build recognition over a longer hold period.",
+      ? "You need a new name, but budget constraints point toward a descriptive or intuitive approach. A name that clearly communicates the holdco's industry role — one that works without heavy brand-building investment but can still build recognition over a longer hold period."
+      : "You need a new name, but budget constraints point toward a descriptive or intuitive approach. A name that clearly communicates the holdco's role — one that works without heavy brand-building investment but can still build recognition over a longer hold period.",
     architectureRecommendation,
     architectureDescription,
     investmentLevel: "moderate",
