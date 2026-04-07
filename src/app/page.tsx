@@ -298,16 +298,6 @@ function QuizScreen({
     <>
       <ProgressBar progress={progress} />
       <div className={animating ? "animate-out" : "animate-slide-in"}>
-        <p
-          style={{
-            fontSize: 13,
-            color: "var(--text-secondary)",
-            marginBottom: 8,
-            fontWeight: 500,
-          }}
-        >
-          Question {currentIdx + 1} of {totalQuestions}
-        </p>
         <h2
           style={{
             fontFamily: "var(--font-serif)",
@@ -401,9 +391,11 @@ function QuizScreen({
 function ResultsScreen({
   outcome,
   onRestart,
+  onBack,
 }: {
   outcome: DecisionOutcome;
   onRestart: () => void;
+  onBack: () => void;
 }) {
   return (
     <div className="animate-fade-in">
@@ -635,7 +627,10 @@ function ResultsScreen({
         </p>
       </div>
 
-      <SecondaryButton onClick={onRestart}>Start over</SecondaryButton>
+      <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+        <SecondaryButton onClick={onBack}>&larr; Back</SecondaryButton>
+        <SecondaryButton onClick={onRestart}>Start over</SecondaryButton>
+      </div>
       <Footer full />
     </div>
   );
@@ -714,7 +709,21 @@ export default function Home() {
       )}
 
       {screen === "results" && outcome && (
-        <ResultsScreen outcome={outcome} onRestart={restart} />
+        <ResultsScreen
+          outcome={outcome}
+          onRestart={restart}
+          onBack={() => {
+            if (answerHistory.length === 0) return;
+            const newHistory = [...answerHistory];
+            const lastId = newHistory.pop()!;
+            const newAnswers = { ...answers };
+            delete newAnswers[lastId];
+            setAnswers(newAnswers);
+            setAnswerHistory(newHistory);
+            setScreen("quiz");
+            setOutcome(null);
+          }}
+        />
       )}
     </div>
   );
