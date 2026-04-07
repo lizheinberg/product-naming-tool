@@ -51,13 +51,14 @@ export function getOutcome(
     architectureDescription =
       "The holdco operates behind the scenes. Portfolio companies maintain fully independent brands with no visible connection to the holding company.";
   } else if (isIndustryFacing) {
-    architectureRecommendation = "Discrete / Hybrid";
     if (brand_equity === "significant") {
+      architectureRecommendation = "Discrete / Hybrid / Masterbrand";
       architectureDescription =
-        "The holdco brand operates as an industry-facing endorser — visible to PE firms, talent, and potential acquisitions — while portfolio companies maintain independent customer-facing identities. Strong portfolio brands retain their own market positioning and customer relationships.";
+        "The holdco brand can operate as an industry-facing endorser, a hybrid identity, or even evolve toward a masterbrand-dominant model with select portfolio brands remaining. Strong portfolio brands may retain their own customer-facing identities, or you may choose to unify under the holdco over time.";
     } else {
+      architectureRecommendation = "Discrete / Hybrid";
       architectureDescription =
-        "With limited portfolio brand equity, the holdco can serve as a unifying industry-facing identity — for PE relationships, employee engagement, and company culture. Portfolio companies maintain separate customer-facing identities as needed.";
+        "The holdco can serve as a unifying industry-facing identity — for PE relationships, employee engagement, and company culture. Portfolio companies maintain separate customer-facing identities as needed.";
     }
   } else {
     // Customer-facing
@@ -68,7 +69,7 @@ export function getOutcome(
     } else {
       architectureRecommendation = "Masterbrand or Endorsed";
       architectureDescription =
-        "With limited existing portfolio brand equity, there's an opportunity to build unified brand power. A masterbrand approach replaces all brands with one identity, maximizing brand efficiency. An endorsed model works well if you want to maintain some brand diversity while still unifying under the holdco.";
+        "There's an opportunity to build unified brand power. A masterbrand approach replaces all brands with one identity, maximizing brand efficiency. An endorsed model works well if you want to maintain some brand diversity while still unifying under the holdco.";
     }
   }
 
