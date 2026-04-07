@@ -194,7 +194,7 @@ export function getOutcome(
   // is likely sufficient. Add a consideration note for this scenario.
   if (name_alignment === "no" && isBrandActive) {
     considerations.push(
-      "If any of the portfolio brands have significant equity and you plan to use an endorsed or discrete architecture model, consider the trademark status of those individual brands — particularly if you plan to expand their geographic reach or goods & services scope. If a strong portco brand will continue operating in its current market, existing trademark coverage is likely sufficient."
+      "If any of the portfolio brands have significant equity and you plan to use an endorsed architecture model, consider the trademark status of those individual brands — particularly if you plan to expand their geographic reach or goods & services scope. If a strong portco brand will continue operating in its current market, existing trademark coverage is likely sufficient."
     );
   }
 
