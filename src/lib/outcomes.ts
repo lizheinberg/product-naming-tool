@@ -54,7 +54,7 @@ export function getOutcome(
     if (brand_equity === "significant") {
       architectureRecommendation = "Discrete / Hybrid / Masterbrand";
       architectureDescription =
-        "The holdco brand can operate as an industry-facing endorser, a hybrid identity, or even evolve toward a masterbrand-dominant model with select portfolio brands remaining. Strong portfolio brands may retain their own customer-facing identities, or you may choose to unify under the holdco over time.";
+        "This brand can operate as an industry-facing endorser, a hybrid identity, or even evolve toward a masterbrand-dominant model with select portfolio brands remaining. Strong portfolio brands may retain their own customer-facing identities, or you may choose to unify under the holdco over time.";
     } else {
       architectureRecommendation = "Discrete / Hybrid";
       architectureDescription =
@@ -135,20 +135,31 @@ export function getOutcome(
 
   // ── Retain path: Aligned + TM cleared ──
   if (name_alignment === "yes" && effectiveTmCleared) {
-    considerations.push(
-      isIndustryFacing
-        ? "Your name and trademark position are strong. Focus investment on building industry presence and internal culture around the holdco brand."
-        : "Your name and trademark position are strong. Focus investment on building the brand within your chosen architecture."
-    );
+    if (isIndustryFacing) {
+      considerations.push(
+        "Depending on the chosen brand architecture, this could become the Holdco name. If not, consider building an endorsed or discrete architecture and retaining the acquired brand(s) that meet the criteria at the portco level."
+      );
+    } else {
+      considerations.push(
+        "Your name and trademark position are strong. Focus investment on building the brand within your chosen architecture."
+      );
+    }
 
-    const nameRec =
-      brand_equity === "significant"
-        ? "Leverage One of the Acquired Brands for the HoldCo Name"
-        : "Retain Existing HoldCo Name or Leverage One of the Acquired Brands for the HoldCo Name";
-    const nameDesc =
-      brand_equity === "significant"
-        ? "One of the acquired portfolio company names is broad enough to cover the portfolio and has the trademark protection to back it up. Keep it, protect it, and invest in building the brand."
-        : "Your holdco name is broad enough to cover the portfolio and has the trademark protection to back it up. Keep it, protect it, and invest in building the brand.";
+    let nameRec: string;
+    let nameDesc: string;
+    if (isIndustryFacing) {
+      nameRec = "Consider Leveraging One of the Acquired Brands as the HoldCo Name";
+      nameDesc =
+        "One of the acquired portfolio company names is broad enough to cover the portfolio and has the trademark protection to back it up. Keep it, protect it, and invest in building the brand.";
+    } else if (brand_equity === "significant") {
+      nameRec = "Leverage One of the Acquired Brands for the HoldCo Name";
+      nameDesc =
+        "One of the acquired portfolio company names is broad enough to cover the portfolio and has the trademark protection to back it up. Keep it, protect it, and invest in building the brand.";
+    } else {
+      nameRec = "Retain Existing HoldCo Name or Leverage One of the Acquired Brands for the HoldCo Name";
+      nameDesc =
+        "Your holdco name is broad enough to cover the portfolio and has the trademark protection to back it up. Keep it, protect it, and invest in building the brand.";
+    }
 
     let nextSteps: string;
     if (isIndustryFacing) {

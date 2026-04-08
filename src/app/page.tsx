@@ -249,6 +249,15 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
           or at least, that&apos;s our goal!
         </p>
         <p>
+          The assessment tool focuses on objective criteria, e.g. brand
+          alignment, trademark status, etc. It is worth noting that more
+          subjective factors such as &ldquo;we just don&apos;t like any of the
+          portco names&rdquo; or &ldquo;elevating one portco brand as the holdco
+          brand might create friction with the other
+          founders/employees&rdquo; are not insignificant and should be
+          considered as part of the overall brand strategy.
+        </p>
+        <p>
           We are currently seeking feedback to help us make this tool more
           useful for professionals in your field. (Just follow the link at
           the end.)
