@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "HoldCo Name Assessment | Prequel",
+  title: "Platform Brand Architecture and Naming Assessment | Prequel",
   description:
     "Does your roll-up's holding company need a new name? Answer a few strategic questions and get a clear assessment of your holdco name's fitness.",
   openGraph: {
-    title: "HoldCo Name Assessment | Prequel",
+    title: "Platform Brand Architecture and Naming Assessment | Prequel",
     description:
       "Find out if your holdco needs a new name in 2 minutes.",
     type: "website",

@@ -56,7 +56,7 @@ export function getOutcome(
       architectureDescription =
         "This brand can operate as an industry-facing endorser, a hybrid identity, or even evolve toward a masterbrand-dominant model with select portfolio brands remaining. Strong portfolio brands may retain their own customer-facing identities, or you may choose to unify under the holdco over time.";
     } else {
-      architectureRecommendation = "Discrete / Hybrid";
+      architectureRecommendation = "Discrete / Hybrid / Endorsed";
       architectureDescription =
         "The holdco can serve as a unifying industry-facing identity — for PE relationships, employee engagement, and company culture. Portfolio companies maintain separate customer-facing identities as needed.";
     }

@@ -47,7 +47,7 @@ function Header() {
           letterSpacing: "0.04em",
         }}
       >
-        HoldCo Name Assessment
+        Platform Brand Architecture and Naming Assessment
       </span>
     </header>
   );
