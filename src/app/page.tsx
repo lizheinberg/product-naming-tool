@@ -1,9 +1,27 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import Image from "next/image";
 import { decisionTreeQuestions } from "@/lib/questions";
 import { getOutcome, type DecisionOutcome } from "@/lib/outcomes";
+
+declare global {
+  interface Window {
+    plausible?: (
+      event: string,
+      options?: { props?: Record<string, string | number> }
+    ) => void;
+  }
+}
+
+function trackEvent(
+  event: string,
+  props?: Record<string, string | number>
+) {
+  if (typeof window !== "undefined" && window.plausible) {
+    window.plausible(event, props ? { props } : undefined);
+  }
+}
 
 // ─── Shared UI Components ──────────────────────────────────────
 
@@ -654,6 +672,7 @@ export default function Home() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [outcome, setOutcome] = useState<DecisionOutcome | null>(null);
   const [answerHistory, setAnswerHistory] = useState<string[]>([]);
+  const quizStartTimeRef = useRef<number | null>(null);
 
   const handleQuizAnswer = useCallback(
     (questionId: string, value: string) => {
@@ -672,6 +691,16 @@ export default function Home() {
         const result = getOutcome(newAnswers);
         setOutcome(result);
         setScreen("results");
+
+        const durationSeconds = quizStartTimeRef.current
+          ? Math.round((Date.now() - quizStartTimeRef.current) / 1000)
+          : 0;
+        trackEvent("Outcome Reached", {
+          name_recommendation: result.nameRecommendation,
+          architecture: result.architectureRecommendation,
+          role: newAnswers.architecture_model ?? "unknown",
+          duration_seconds: durationSeconds,
+        });
       }
     },
     [answers]
@@ -688,10 +717,12 @@ export default function Home() {
   }, [answers, answerHistory]);
 
   const restart = useCallback(() => {
+    trackEvent("Restart");
     setScreen("welcome");
     setAnswers({});
     setOutcome(null);
     setAnswerHistory([]);
+    quizStartTimeRef.current = null;
   }, []);
 
   return (
@@ -706,7 +737,13 @@ export default function Home() {
       <Header />
 
       {screen === "welcome" && (
-        <WelcomeScreen onStart={() => setScreen("quiz")} />
+        <WelcomeScreen
+          onStart={() => {
+            trackEvent("Quiz Started");
+            quizStartTimeRef.current = Date.now();
+            setScreen("quiz");
+          }}
+        />
       )}
 
       {screen === "quiz" && (
@@ -723,6 +760,7 @@ export default function Home() {
           onRestart={restart}
           onBack={() => {
             if (answerHistory.length === 0) return;
+            trackEvent("Back From Results");
             const newHistory = [...answerHistory];
             const lastId = newHistory.pop()!;
             const newAnswers = { ...answers };
