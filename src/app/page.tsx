@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import Image from "next/image";
 import { decisionTreeQuestions } from "@/lib/questions";
 import { getOutcome, type DecisionOutcome } from "@/lib/outcomes";
@@ -243,11 +243,6 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
         }}
       >
         <p>
-          If you&apos;ve received a link to this tool, it&apos;s because
-          someone values your expertise in the realm of portfolio companies and
-          brand building.
-        </p>
-        <p>
           This is a beta version of a decision tool created by the strategic
           naming agency{" "}
           <a
@@ -417,12 +412,187 @@ function QuizScreen({
   );
 }
 
+function buildShareLink(answers: Record<string, string>): string {
+  const params = new URLSearchParams();
+  for (const [k, v] of Object.entries(answers)) params.set(k, v);
+  const origin =
+    typeof window !== "undefined"
+      ? window.location.origin
+      : "https://holdco.prequel.agency";
+  return `${origin}/?${params.toString()}`;
+}
+
+function buildSummaryText(outcome: DecisionOutcome): string {
+  const lines: string[] = [];
+  lines.push("Platform Brand Architecture and Naming Assessment");
+  lines.push("");
+  lines.push(`RECOMMENDATION: ${outcome.nameRecommendation}`);
+  lines.push(outcome.nameDescription);
+  lines.push("");
+  lines.push(`ARCHITECTURE: ${outcome.architectureRecommendation}`);
+  lines.push(outcome.architectureDescription);
+  if (outcome.considerations.length > 0) {
+    lines.push("");
+    lines.push("KEY CONSIDERATIONS:");
+    for (const c of outcome.considerations) lines.push(`• ${c}`);
+  }
+  lines.push("");
+  lines.push("NEXT STEPS:");
+  lines.push(outcome.investmentDescription);
+  lines.push("");
+  lines.push("—");
+  lines.push("Take the assessment: https://holdco.prequel.agency");
+  return lines.join("\n");
+}
+
+function ShareMenu({
+  answers,
+  outcome,
+}: {
+  answers: Record<string, string>;
+  outcome: DecisionOutcome;
+}) {
+  const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState<"link" | "summary" | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDocClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, [open]);
+
+  const doCopy = async (kind: "link" | "summary") => {
+    const text =
+      kind === "link" ? buildShareLink(answers) : buildSummaryText(outcome);
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(kind);
+      trackEvent(kind === "link" ? "Link Copied" : "Summary Copied");
+      setTimeout(() => {
+        setCopied(null);
+        setOpen(false);
+      }, 1200);
+    } catch {
+      // Clipboard API not available — no-op
+    }
+  };
+
+  return (
+    <div ref={menuRef} style={{ position: "relative" }}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        style={{
+          background: "transparent",
+          color: "var(--text-secondary)",
+          border: "1px solid var(--border)",
+          padding: "10px 24px",
+          fontSize: 14,
+          fontFamily: "var(--font-sans)",
+          borderRadius: 100,
+          cursor: "pointer",
+          transition: "all 0.2s",
+        }}
+        onMouseEnter={(e) => {
+          (e.currentTarget as HTMLButtonElement).style.borderColor =
+            "var(--border-strong)";
+          (e.currentTarget as HTMLButtonElement).style.color = "var(--text)";
+        }}
+        onMouseLeave={(e) => {
+          (e.currentTarget as HTMLButtonElement).style.borderColor =
+            "var(--border)";
+          (e.currentTarget as HTMLButtonElement).style.color =
+            "var(--text-secondary)";
+        }}
+      >
+        Share
+      </button>
+      {open && (
+        <div
+          style={{
+            position: "absolute",
+            top: "calc(100% + 8px)",
+            left: 0,
+            background: "var(--card-bg)",
+            border: "1px solid var(--border)",
+            borderRadius: 12,
+            padding: 6,
+            minWidth: 180,
+            boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+            zIndex: 10,
+          }}
+        >
+          <button
+            onClick={() => doCopy("link")}
+            style={{
+              display: "block",
+              width: "100%",
+              textAlign: "left",
+              background: "transparent",
+              border: "none",
+              padding: "10px 14px",
+              fontSize: 14,
+              fontFamily: "var(--font-sans)",
+              color: "var(--text)",
+              borderRadius: 8,
+              cursor: "pointer",
+            }}
+            onMouseEnter={(e) =>
+              ((e.currentTarget as HTMLButtonElement).style.background =
+                "var(--hover-bg, rgba(0,0,0,0.04))")
+            }
+            onMouseLeave={(e) =>
+              ((e.currentTarget as HTMLButtonElement).style.background =
+                "transparent")
+            }
+          >
+            {copied === "link" ? "✓ Copied!" : "Copy link"}
+          </button>
+          <button
+            onClick={() => doCopy("summary")}
+            style={{
+              display: "block",
+              width: "100%",
+              textAlign: "left",
+              background: "transparent",
+              border: "none",
+              padding: "10px 14px",
+              fontSize: 14,
+              fontFamily: "var(--font-sans)",
+              color: "var(--text)",
+              borderRadius: 8,
+              cursor: "pointer",
+            }}
+            onMouseEnter={(e) =>
+              ((e.currentTarget as HTMLButtonElement).style.background =
+                "var(--hover-bg, rgba(0,0,0,0.04))")
+            }
+            onMouseLeave={(e) =>
+              ((e.currentTarget as HTMLButtonElement).style.background =
+                "transparent")
+            }
+          >
+            {copied === "summary" ? "✓ Copied!" : "Copy summary"}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ResultsScreen({
   outcome,
+  answers,
   onRestart,
   onBack,
 }: {
   outcome: DecisionOutcome;
+  answers: Record<string, string>;
   onRestart: () => void;
   onBack: () => void;
 }) {
@@ -656,9 +826,10 @@ function ResultsScreen({
         </p>
       </div>
 
-      <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+      <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
         <SecondaryButton onClick={onBack}>&larr; Back</SecondaryButton>
         <SecondaryButton onClick={onRestart}>Start over</SecondaryButton>
+        <ShareMenu answers={answers} outcome={outcome} />
       </div>
       <Footer full />
     </div>
@@ -675,6 +846,32 @@ export default function Home() {
   const [outcome, setOutcome] = useState<DecisionOutcome | null>(null);
   const [answerHistory, setAnswerHistory] = useState<string[]>([]);
   const quizStartTimeRef = useRef<number | null>(null);
+
+  // If the page loads with answer query params, jump straight to the
+  // matching results so shared links work.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const parsed: Record<string, string> = {};
+    for (const q of decisionTreeQuestions) {
+      const v = params.get(q.id);
+      if (v && q.options.some((o) => o.value === v)) {
+        parsed[q.id] = v;
+      }
+    }
+    if (Object.keys(parsed).length === 0) return;
+
+    const applicable = decisionTreeQuestions.filter(
+      (q) => !q.condition || q.condition(parsed)
+    );
+    const allAnswered = applicable.every((q) => parsed.hasOwnProperty(q.id));
+    if (!allAnswered) return;
+
+    setAnswers(parsed);
+    setAnswerHistory(applicable.map((q) => q.id));
+    setOutcome(getOutcome(parsed));
+    setScreen("results");
+    trackEvent("Shared Result Viewed");
+  }, []);
 
   const handleQuizAnswer = useCallback(
     (questionId: string, value: string) => {
@@ -759,6 +956,7 @@ export default function Home() {
       {screen === "results" && outcome && (
         <ResultsScreen
           outcome={outcome}
+          answers={answers}
           onRestart={restart}
           onBack={() => {
             if (answerHistory.length === 0) return;
