@@ -261,9 +261,11 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
           .
         </p>
         <p>
-          In just a few minutes, we&apos;ll take you from &ldquo;do I need a
-          new name for this holdco&rdquo; to &ldquo;I understand the factors I
-          should be considering and the next steps I should take&rdquo; &mdash;
+          In just a few minutes, we&apos;ll take you from &ldquo;How should we
+          organize the platform brands? Should we keep the anchor as the
+          Holdco name? And do I need a new name for this Holdco?&rdquo; to
+          &ldquo;I understand the factors I should be considering and the
+          next steps I should take&rdquo; &mdash;
           or at least, that&apos;s our goal!
         </p>
         <p>
