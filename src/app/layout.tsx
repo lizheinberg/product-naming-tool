@@ -2,15 +2,25 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import "./globals.css";
 
+const SITE_TITLE = "Platform Brand Architecture and Naming Assessment | Prequel";
+const SITE_DESCRIPTION =
+  "A short assessment to help you decide how to organize platform brands and whether to keep, leverage, or replace your holdco name.";
+
 export const metadata: Metadata = {
-  title: "Platform Brand Architecture and Naming Assessment | Prequel",
-  description:
-    "Does your roll-up's holding company need a new name? Answer a few strategic questions and get a clear assessment of your holdco name's fitness.",
+  metadataBase: new URL("https://holdco.prequel.agency"),
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
   openGraph: {
-    title: "Platform Brand Architecture and Naming Assessment | Prequel",
-    description:
-      "Find out if your holdco needs a new name in 2 minutes.",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    url: "https://holdco.prequel.agency",
+    siteName: "Prequel",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
   },
 };
 
