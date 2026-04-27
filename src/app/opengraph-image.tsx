@@ -4,26 +4,7 @@ export const alt = "Platform Brand Architecture and Naming Assessment";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-async function loadFont(query: string): Promise<ArrayBuffer> {
-  const url = `https://fonts.googleapis.com/css2?${query}&display=swap`;
-  const css = await fetch(url, {
-    headers: {
-      "User-Agent":
-        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36",
-    },
-  }).then((r) => r.text());
-  const match = css.match(/src:\s*url\(([^)]+)\)/);
-  if (!match) throw new Error("font CSS parse failed");
-  const fontUrl = match[1].replace(/['"]/g, "");
-  return fetch(fontUrl).then((r) => r.arrayBuffer());
-}
-
 export default async function Image() {
-  const [playfair, inter] = await Promise.all([
-    loadFont("family=Playfair+Display:wght@400"),
-    loadFont("family=Inter:wght@400"),
-  ]);
-
   return new ImageResponse(
     (
       <div
@@ -34,7 +15,6 @@ export default async function Image() {
           display: "flex",
           flexDirection: "column",
           padding: "72px 88px",
-          fontFamily: "Inter",
         }}
       >
         {/* Prequel dots + wordmark */}
@@ -69,11 +49,12 @@ export default async function Image() {
           style={{
             display: "flex",
             flexDirection: "column",
-            fontFamily: "Playfair Display",
-            fontSize: 80,
+            fontSize: 76,
+            fontWeight: 600,
             color: "#112444",
             lineHeight: 1.1,
             marginBottom: 36,
+            letterSpacing: "-0.02em",
           }}
         >
           <div style={{ display: "flex" }}>Platform Brand Architecture</div>
@@ -108,17 +89,6 @@ export default async function Image() {
         </div>
       </div>
     ),
-    {
-      ...size,
-      fonts: [
-        {
-          name: "Playfair Display",
-          data: playfair,
-          style: "normal",
-          weight: 400,
-        },
-        { name: "Inter", data: inter, style: "normal", weight: 400 },
-      ],
-    }
+    size
   );
 }
