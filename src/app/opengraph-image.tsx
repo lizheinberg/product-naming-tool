@@ -26,7 +26,7 @@ export default async function Image() {
       >
         {/* Prequel logo */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={logoDataUri} width={280} height={76} alt="Prequel" />
+        <img src={logoDataUri} width={140} height={38} alt="Prequel" />
 
         <div style={{ flex: 1, display: "flex" }} />
 
