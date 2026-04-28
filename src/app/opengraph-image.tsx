@@ -1,10 +1,17 @@
 import { ImageResponse } from "next/og";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 
 export const alt = "Platform Brand Architecture and Naming Assessment";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 export default async function Image() {
+  const logoBuffer = await readFile(
+    join(process.cwd(), "public/prequel-logo.svg")
+  );
+  const logoDataUri = `data:image/svg+xml;base64,${logoBuffer.toString("base64")}`;
+
   return new ImageResponse(
     (
       <div
@@ -17,30 +24,9 @@ export default async function Image() {
           padding: "72px 88px",
         }}
       >
-        {/* Prequel dots + wordmark */}
-        <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <div
-              style={{
-                width: 22,
-                height: 22,
-                borderRadius: 11,
-                background: "#0287B8",
-              }}
-            />
-            <div
-              style={{
-                width: 22,
-                height: 22,
-                borderRadius: 11,
-                background: "#0287B8",
-              }}
-            />
-          </div>
-          <div style={{ display: "flex", fontSize: 32, color: "#112444" }}>
-            prequel
-          </div>
-        </div>
+        {/* Prequel logo */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={logoDataUri} width={280} height={76} alt="Prequel" />
 
         <div style={{ flex: 1, display: "flex" }} />
 
